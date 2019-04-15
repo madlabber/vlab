@@ -26,7 +26,7 @@ get-vapp $vApp | get-vm | where { $_.PowerState -eq "PoweredOn" } | stop-vm -con
 # remove the portgroups
 $portGroups=get-vapp $vApp | get-vm | get-virtualportgroup | where { $_.Name -like "$vApp*" }
 foreach ( $pg in $portGroups ) {
-	get-cluster | ?{ $_.Name -eq $conf.vmwCluster } | get-vmhost | get-virtualswitch | ?{ $_.Name -eq $conf.vswitch} | get-virtualportgroup | ?{ $_.Name -eq $pg.Name } | remove-virtualportgroup -confirm:$false
+	get-cluster | ?{ $_.Name -eq $conf.VICluster } | get-vmhost | get-virtualswitch | ?{ $_.Name -eq $conf.vswitch} | get-virtualportgroup | ?{ $_.Name -eq $pg.Name } | remove-virtualportgroup -confirm:$false
 	#get-vapp $vApp | get-vm | get-virtualportgroup | where { $_.Name -like "$vApp*" } | remove-virtualportgroup -confirm:$false
 }
 

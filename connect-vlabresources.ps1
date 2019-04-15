@@ -29,15 +29,12 @@ $conf=. "$ScriptDirectory\get-vlabsettings.ps1"
 #region Establish connections	
 	# Connect to vCenter
 	if (  $defaultVIServer.Name -ne $conf.vCenter ) {
-		#$result=$(Connect-VIServer -Server $conf.vCenter -user $conf.vmwUser -password $conf.vmwPassword )
 		$VICred = Import-CliXml "$ScriptDirectory\vicred.clixml"
 		$result=$(Connect-VIServer -Server $conf.vCenter -credential $VICred )
 	}
 	
 	# Connect to NetApp Cluster	
 	if ( $CurrentNcController.Name -ne $conf.cluster_mgmt ) {
-		#$secpasswd = ConvertTo-SecureString $conf.ncPassword -AsPlainText -Force
-		#$NCCred = New-Object System.Management.Automation.PSCredential ($conf.ncUser, $secpasswd)
 		$NCCred = Import-CliXml "$ScriptDirectory\nccred.clixml"
 		$result=$(Connect-NcController $conf.cluster_mgmt -vserver $conf.vserver -credential $NCCred )
 	}

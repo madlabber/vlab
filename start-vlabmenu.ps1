@@ -21,7 +21,7 @@ write-header "loading..."
 # vLab Catalog
 function menu1vLabCatalog {
 	Write-Header "Loading..."
-	$vlabCatalog=.\get-vlabcatalog.ps1
+	$vlabCatalog=.\show-vlabcatalog.ps1
 	$done=$false
 	do {
 		write-header "vLab Templates"
@@ -33,7 +33,7 @@ function menu1vLabCatalog {
 		$selection = Read-Host "::>"
 		if ( "$selection" -eq "p" ) { 
 			$selection = Read-Host "Enter the name of the lab to create"
-			$result=$vLabCatalog | where { $_.Name -eq "$selection" }
+			$result=.\get-vlabcatalog.ps1 | where { $_.Name -eq "$selection" }
 			if ( !$result ) { 
 				write-host "Lab "$selection" not found." 
 				sleep 3 
@@ -55,9 +55,9 @@ function menu1vLabCatalog {
 			} 
 		}
 		elseif ( "$selection" -eq "b" ) { $done=$true }
-		elseif ( "$selection" -eq "r" ) { $vlabCatalog=.\get-vlabcatalog.ps1 }	
+		elseif ( "$selection" -eq "r" ) { $vlabCatalog=.\show-vlabcatalog.ps1 }	
 		else {
-			$result=$vLabCatalog | where { $_.Name -eq "$selection" }
+			$result=.\get-vlabcatalog.ps1 | where { $_.Name -eq "$selection" }
 			if ( !$result ) { 
 				write-host "Lab "$selection" not found." 
 				sleep 2 
@@ -65,7 +65,7 @@ function menu1vLabCatalog {
 			else { 
 				$CURRENTVLAB="$selection"
 				menu4vLabCatalogDetail 
-				$vlabList=.\get-vlabs.ps1 
+				$vlabcatalog=.\show-vlabcatalog.ps1 
 			}
 		}
 	} until ( $done )
@@ -74,7 +74,7 @@ function menu1vLabCatalog {
 # vLab Instances
 function menu2vLabInstances {
 	write-header "loading..."
-	$vLabList=.\get-vlabs.ps1
+	$vLabList=.\show-vlabs.ps1
 	$done=$false
 	do {
 		write-header "vLab Instances"
@@ -85,16 +85,16 @@ function menu2vLabInstances {
 		Write-Host "--------------------------------------------------------------------------------"
 		$selection=Read-Host "::>"
 		if     ( "$selection" -eq "b" ) { $done=$true }
-		elseif ( "$selection" -eq "r" ) { $vlabList=.\get-vlabs.ps1 }
+		elseif ( "$selection" -eq "r" ) { $vlabList=.\show-vlabs.ps1 }
 		else {
-			$result=$vLabList | where { $_.Name -eq "$selection" }
+			$result=.\get-vlabs.ps1 | where { $_.Name -eq "$selection" }
 			if ( !$result ) { 
 				write-host "Lab "$selection" not found." 
 				sleep 2 }
 			else { 
 				$CURRENTVLAB="$selection"
 				menu3vLabDetail 
-				$vlabList=.\get-vlabs.ps1 }
+				$vlabList=.\show-vlabs.ps1 }
 		}
 	} until ( $done )
 }
@@ -193,18 +193,50 @@ function menuAdminMenu {
 	do {
 		Write-Header "Admin Menu"
 		write-host
-		write-host "Current Settings:"
-		$conf=.\get-vlabsettings.ps1
-		$conf 
+		write-host " 1....Configuration Settings"
+		write-host " 2....Set Credentials"
 		write-host
+		write-host
+		write-host		
 		#          #12345678901234567890123456789012345678901234567890123456789012345678901234567890
 		Write-Host "--------------------------------------------------------------------------------"
 		Write-Host "                                                             | [R]efresh [B]ack "
 		Write-Host "--------------------------------------------------------------------------------"
 		$selection = Read-Host "::>"
 		if ( $selection -eq "b" ) { $done=$true }
+		if ( $selection -eq "1" ) { menuSettingsMenu }
+		if ( $selection -eq "2" ) { .\set-vlabcreds.ps1 }
 	} until ( $done )
 }
+
+# Admin Menu
+function menuSettingsMenu {
+	$done=$false
+	do {
+		Write-Header "Configuration Settings:"
+		write-host
+		$conf=.\get-vlabsettings.ps1
+		$conf | format-table
+		write-host
+		#          #12345678901234567890123456789012345678901234567890123456789012345678901234567890
+		Write-Host "--------------------------------------------------------------------------------"
+		Write-Host "Enter setting to change                                      | [R]efresh [B]ack "
+		Write-Host "--------------------------------------------------------------------------------"
+		$selection = Read-Host "::>"
+		if ( $selection -eq "b" ) { $done=$true }
+		if ( $conf[$selection] ) { 
+			$key=$selection
+			$oldval=$conf[$selection]
+			$newval = Read-Host "Enter $selection [ $oldval ]"
+			if ( $newval ) { $result=.\set-vlabsettings.ps1 -key "$key" -value "$newval" }
+		}
+	} until ( $done )
+}
+
+
+
+
+
 # Main Menu
 do {
 	Write-Header "Main Menu"

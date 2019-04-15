@@ -16,7 +16,8 @@
 
 Param(
   [Parameter(Mandatory=$True,Position=1)][string]$vApp,
-  [Parameter(Position=2)][string]$vAppNew,
+  [Parameter(Position=2)][int]$pgCount,
+  [Parameter(Position=3)][int]$sizeGB,
   [Parameter][string]$VMHost
 )
 
@@ -27,7 +28,6 @@ $conf=. "$ScriptDirectory\get-vlabsettings.ps1"
 
 # Settings
 $newID=100
-
 # Pick the host with the most free ram unless specified by config file or parameter
 if ( ! $conf.vmwHost ){
  $conf.vmwHost=$(get-vmhost  | Select-Object Name, @{n='FreeMem';e={$_.MemoryTotalGB - $_.MemoryUsageGB}} | sort FreeMem | select-object -last 1).Name
@@ -40,13 +40,11 @@ if ( ! $conf.VIDatastore ) { $conf.VIDatastore="$vApp" }
 if ( ! $VIDatastore ) { $VIDatastore=$conf.VIDatastore }
 
 # Find next vAppID
-if ( ! $vAppNew ) {
-	do {
-		$newID++
-		$vAppNew="$vApp"+"_"+"$newID"
-		$result=get-vapp | where { $_.Name -eq "$vAppNew" }
-	} while ( $result )
-} 
+do {
+	$newID++
+	$vAppNew="$vApp"+"_"+"$newID"
+	$result=get-vapp | where { $_.Name -eq "$vAppNew" }
+} while ( $result ) 
 #endregion
 
 # Feedback
@@ -54,11 +52,11 @@ Write-Host "Provisioning $vAppNew from $vApp on"$conf.vmwHost
 
 # FlexClone the vApp volume
 Write-Host "Creating Volume FlexClone /$VIDatastore/$vAppNew"
-$result=New-NcVolClone $vAppNew $vApp -JunctionPath "/$VIDatastore/$vAppNew" -ParentSnapshot master
+$result=New-NcVol $vApp -JunctionPath "/$VIDatastore/$vApp" -aggregate (get-ncvol vLabs).aggregate -size $sizeGB"GB"
 
 # Create New vApp
 write-host "Creating vApp $vappnew"
-$result=New-VApp -Name $vAppNew -Location (Get-Cluster $conf.VICluster)
+$result=New-VApp -Name $vApp -Location (Get-Cluster $conf.VICluster)
 
 # Create New portgroups
 # Hosts have a portgroup limit of 500ish
@@ -67,7 +65,7 @@ $pgID=1
 [int]$pgVLan=$conf.vlanbase
 $virtualSwitches=get-cluster | ?{ $_.Name -eq $conf.VICluster } | get-vmhost | get-virtualswitch | ?{ $_.Name -eq $conf.vswitch}
 $portGroups=$virtualSwitches | get-virtualportgroup
-foreach($srcPortGroup in $(get-vapp $vApp | get-vm | get-virtualportgroup | where { $_.Name -like "$vApp*" })) {
+do{
 	#Find next unused VLAN
 	DO {
 		$pgVLan++
@@ -75,11 +73,13 @@ foreach($srcPortGroup in $(get-vapp $vApp | get-vm | get-virtualportgroup | wher
 	} while ( $result )
 
 	#PortGroups are sequential independant of VLAN ID
-	$pgName="$vAppNew"+"_$pgID"
+	$pgName="$vApp"+"_net$pgID"
 	$result=$virtualSwitches | new-virtualportgroup -name $pgName -vlanid $pgVLan
 	$pgID++
 	$pgVLan++
-}
+}while ( $pgID -le $pgCount )
+
+exit
 
 # Register all the VMs into the vApp
 Write-Host "Registering VMs"
@@ -129,10 +129,8 @@ Foreach ($VM in $VMs){
 	Foreach ($Device in ( $vm.ExtensionData.Config.Hardware.Device | where { $_.gettype().Name -eq "VirtualSerialPort" } )) {
 			$pipeName=$Device.Backing.PipeName
 			If ($pipeName -like "*$vApp*") {
-				#$newPipeName=$pipeName+"_"+$newID	
-				#write-host "Serial"$Device.UnitNumber" : $pipeName => $newPipeName"	
-				$newPipeName=$vAppNew+$pipeName.substring($vApp.length)	
-				write-host $VM.Name	": Serial"$Device.UnitNumber" : $pipeName => $newPipeName"					
+				$newPipeName=$pipeName+"_"+$newID	
+				#write-host "Serial"$Device.UnitNumber" : $pipeName => $newPipeName"			
 				
 				#Now.. hackery begins
 				$cfgSpec=New-Object VMware.Vim.VirtualMachineConfigSpec
