@@ -3,7 +3,7 @@ Param(
   [Parameter(Mandatory=$True,Position=2)][string]$value
 )
 
-$configfile=".\vlab.cfg"
+$configfile=".\settings.cfg"
 
 #load settings from file
 $settings = Get-Content $configfile | Out-String | ConvertFrom-StringData
