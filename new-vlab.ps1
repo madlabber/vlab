@@ -118,6 +118,7 @@ foreach($srcPortGroup in $(get-vapp $vApp | get-vm | get-virtualportgroup | wher
 }
 # Connect the WAN interface
 $oldWAN=$(get-vapp $vAppNew | get-vm | ?{ $_.Name -eq "gateway"} | get-networkadapter | ?{ $_.NetworkName -notlike "$vAppNew*" }).NetworkName
+$newWAN=Get-VirtualPortGrtoup -Name $conf.VIPortgroup
 foreach($srcPortGroup in $(get-vapp $vApp | get-vm | get-virtualportgroup | where { $_.Name -eq $oldWAN })) {
 	$result=get-vapp $vAppNew | get-vm | get-networkadapter | where {$_.NetworkName -eq $srcPortGroup } | set-networkadapter -NetworkName $conf.VIPortgroup -confirm:$false
 }
