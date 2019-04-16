@@ -74,7 +74,8 @@ write-host "Creating portgroups"
 [int]$pgVLan=$conf.vlanbase
 $virtualSwitches=get-cluster | ?{ $_.Name -eq $conf.VICluster } | get-vmhost | get-virtualswitch | ?{ $_.Name -eq $conf.vswitch}
 $portGroups=$virtualSwitches | get-virtualportgroup
-foreach($srcPortGroup in $(get-vapp $vApp | get-vm | get-virtualportgroup | where { $_.Name -like "$vApp*" })) {
+#foreach($srcPortGroup in $(get-vapp $vApp | get-vm | get-virtualportgroup | where { $_.Name -like "$vApp*" })) {
+foreach($srcPortGroup in $(get-vapp $vApp | get-vm | get-networkadapter | where { $_.NetworkName -like "$vApp*" })) {
 	#Find next unused VLAN
 	DO {
 		$pgVLan++
@@ -82,9 +83,9 @@ foreach($srcPortGroup in $(get-vapp $vApp | get-vm | get-virtualportgroup | wher
 	} while ( $result )
 
 	# If the portgroup is missing then create it
-	$pgexists=$portGroups | where { $_.Name -eq "$srcPortGroup" }
+	$pgexists=$portGroups | where { $_.Name -eq $srcPortGroup.NetworkName }
 	if ( ! $pgexists ){
-		$result=$virtualSwitches | new-virtualportgroup -name "$srcPortGroup" -vlanid $pgVLan
+		$result=$virtualSwitches | new-virtualportgroup -name $srcPortGroup.NetworkName -vlanid $pgVLan -erroraction SilentlyContinue
 		$pgVLan++
 	}
 }

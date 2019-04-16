@@ -33,7 +33,11 @@ foreach ( $pg in $portGroups ) {
 # remove the vApp
 get-vapp $vApp | remove-vApp -confirm:$false
 
-# remove the volume
-get-ncvol $vApp | dismount-ncvol | set-ncvol -offline | remove-ncvol -confirm:$false
+# remove datastore if mounted for authoring
+Get-Datastore -Name $vApp.Name | remove-datastore -confirm:$false
 
+# dismount the volume
+get-ncvol $vApp | dismount-ncvol 
 
+# remove the volume if it is a clone
+get-ncvol $vApp | where { $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name } | set-ncvol -offline | remove-ncvol -confirm:$false

@@ -1,6 +1,4 @@
 $CURRENTVLAB=""
-#$vLabCatalog=.\get-vlabcatalog.ps1
-#$vLabList=.\get-vlabs.ps1
 
 # Write-Header
 function write-header {
@@ -16,7 +14,28 @@ function write-header {
 		write-host $border
 }
 
-write-header "loading..."
+# Main Menu
+function menuMain {
+    do {
+	    Write-Header "Main Menu"
+	    #          #12345678901234567890123456789012345678901234567890123456789012345678901234567890
+    	Write-Host 
+	    Write-Host "1. vLab Catalog"
+	    Write-Host "2. vLab Instances"
+	    Write-Host "3. Admin Menu"
+	    Write-Host "X. Exit"
+	    Write-Host
+	    $input = Read-Host "::>"
+	
+	    switch ($input) {
+	    	'1' { menu1vLabCatalog }
+	    	'2' { menu2vLabInstances }
+	    	'3' { menuAdminMenu }
+	    	'x' { return }
+	    }
+	    #pause
+    } until ($input -eq 'q')	
+}
 
 # vLab Catalog
 function menu1vLabCatalog {
@@ -24,37 +43,16 @@ function menu1vLabCatalog {
 	$vlabCatalog=.\show-vlabcatalog.ps1
 	$done=$false
 	do {
-		write-header "vLab Templates"
+		write-header "vLab Catalog"
 		$vLabCatalog | Format-Table
 		#          #12345678901234567890123456789012345678901234567890123456789012345678901234567890
 		Write-Host "--------------------------------------------------------------------------------"
 		Write-Host "Enter vLab Name for Details.                                 | [R]efresh [B]ack "
 		Write-Host "--------------------------------------------------------------------------------"
 		$selection = Read-Host "::>"
-		if ( "$selection" -eq "p" ) { 
-			$selection = Read-Host "Enter the name of the lab to create"
-			$result=.\get-vlabcatalog.ps1 | where { $_.Name -eq "$selection" }
-			if ( !$result ) { 
-				write-host "Lab "$selection" not found." 
-				sleep 3 
-			}
-			else {
-				cls
-				#          #12345678901234567890123456789012345678901234567890123456789012345678901234567890
-				Write-Host "--------------------------------------------------------------------------------"
-				Write-Host " Provisioning...                                         | vLAB Automation Kit |"
-				Write-Host "--------------------------------------------------------------------------------"	
-				Write-Host
-				Write-Host
-				Write-Host
-				Write-Host
-				$result=.\new-vlab.ps1 $selection 
-				$CURRENTVLAB=$result.Name
-				menu3vLabDetail
-				$done=$true
-			} 
-		}
-		elseif ( "$selection" -eq "b" ) { $done=$true }
+
+		if     ( "$selection" -eq "b" ) { $done=$true }
+		elseif ( "$selection" -eq "m" ) { menuMain }
 		elseif ( "$selection" -eq "r" ) { $vlabCatalog=.\show-vlabcatalog.ps1 }	
 		else {
 			$result=.\get-vlabcatalog.ps1 | where { $_.Name -eq "$selection" }
@@ -85,6 +83,7 @@ function menu2vLabInstances {
 		Write-Host "--------------------------------------------------------------------------------"
 		$selection=Read-Host "::>"
 		if     ( "$selection" -eq "b" ) { $done=$true }
+		elseif ( "$selection" -eq "m" ) { menuMain }
 		elseif ( "$selection" -eq "r" ) { $vlabList=.\show-vlabs.ps1 }
 		else {
 			$result=.\get-vlabs.ps1 | where { $_.Name -eq "$selection" }
@@ -99,7 +98,7 @@ function menu2vLabInstances {
 	} until ( $done )
 }
 
-# vLab Detail
+# vLab Instance 
 function menu3vLabDetail {  
 	$done=$false
 	do { 	
@@ -107,7 +106,7 @@ function menu3vLabDetail {
 		cls
 		#          #12345678901234567890123456789012345678901234567890123456789012345678901234567890
 		Write-Host "--------------------------------------------------------------------------------"
-		Write-Host " vLab Detail                                             | vLAB Automation Kit |"
+		Write-Host " vLab Instance                                           | vLAB Automation Kit |"
 		Write-Host "--------------------------------------------------------------------------------"
 		Write-Host
 		Write-Host "vLAB: $CURRENTVLAB"
@@ -121,6 +120,7 @@ function menu3vLabDetail {
 		$selection=Read-Host "::>"
 		if     ( "$selection" -eq "b" ) { $done=$true }
 		elseif ( "$selection" -eq "r" ) { $done=$false }
+		elseif ( "$selection" -eq "m" ) { menuMain }
 		elseif ( "$selection" -eq "s" ) { get-vapp "$CURRENTVLAB" | get-vm | start-vm }	
 		elseif ( "$selection" -eq "k" ) { get-vapp "$CURRENTVLAB" | get-vm | where { $_.PowerState -eq "PoweredOn" } | stop-vm }	
 		elseif ( "$selection" -eq "u" ) { get-vapp "$CURRENTVLAB" | get-vm | where { $_.PowerState -eq "PoweredOn" } | stop-vmguest }
@@ -139,7 +139,7 @@ function menu3vLabDetail {
 	} until ( $done )
 }
 
-# vLab Detail
+# vLab Catalog Item
 function menu4vLabCatalogDetail {  
 	$done=$false
 	do { 
@@ -152,7 +152,7 @@ function menu4vLabCatalogDetail {
 		if ( $relsnap ) { $reldate=$relsnap.Created }
 		else { $reldate = "NOT RELEASED" }
 		
-		Write-header "vLab Catalog Detail"
+		Write-header "vLab Catalog Item"
 		#          #12345678901234567890123456789012345678901234567890123456789012345678901234567890
 		Write-Host
 		Write-Host "vLAB    : $CURRENTVLAB"
@@ -162,11 +162,68 @@ function menu4vLabCatalogDetail {
 		Write-Host "Virtual Machines:"
 		get-vapp | where { $_.Name -eq "$CURRENTVLAB" } | get-vm | sort Name | format-table
 		Write-Host "--------------------------------------------------------------------------------"
-		Write-Host " [P]rovision        | [S]tart  [U]Shutdown  [K]ill  [L]aunch | [R]efresh [B]ack "
+		Write-Host " [P]rovision |                                     | [A]dmin | [R]efresh [B]ack "
 		Write-Host "--------------------------------------------------------------------------------"
 		$selection=Read-Host "::>"
 		if     ( "$selection" -eq "b" ) { $done=$true }
 		elseif ( "$selection" -eq "r" ) { $done=$false }
+		elseif ( "$selection" -eq "m" ) { menuMain }
+		elseif ( "$selection" -eq "a" ) { menu4vLabCatalogDetailAdmin }
+		elseif ( "$selection" -eq "s" ) { get-vapp "$CURRENTVLAB" | get-vm | start-vm }	
+		elseif ( "$selection" -eq "k" ) { get-vapp "$CURRENTVLAB" | get-vm | where { $_.PowerState -eq "PoweredOn" } | stop-vm }	
+		elseif ( "$selection" -eq "u" ) { get-vapp "$CURRENTVLAB" | get-vm | where { $_.PowerState -eq "PoweredOn" } | stop-vmguest }
+		elseif ( "$selection" -eq "l" ) { 
+			if ( $wanip ) { mstsc /v:"$wanip" /admin /f }
+		}	
+		elseif ( "$selection" -eq "p" ) {	
+			Write-Header "Provisioning..."
+			Write-Host
+			Write-Host
+			Write-Host
+			Write-Host
+			$result=.\new-vlab.ps1 $CURRENTVLAB 
+			$CURRENTVLAB=$result.Name
+			menu3vLabDetail
+			$done=$true
+		}
+	} until ( $done )
+}
+
+# vLab Catalog Item Admin
+function menu4vLabCatalogDetailAdmin {  
+	$done=$false
+	do { 
+		$wanip=""
+		$reldate=""
+		$gateway=get-vapp "$CURRENTVLAB" | get-vm | where { $_.Name -eq "gateway" }
+		if ( $gateway ) { $wanip=$gateway.guest.IPAddress[0] }
+		#$wanip=$(get-vapp "$CURRENTVLAB" | get-vm | where { $_.Name -eq "gateway" }).guest.IPAddress[0]
+		$relsnap=get-ncvol | where { $_.Name -eq "$CURRENTVLAB" } | get-ncsnapshot | where { $_.Name -eq "master" }
+		if ( $relsnap ) { $reldate=$relsnap.Created }
+		else { $reldate = "NOT RELEASED" }
+		
+		Write-header "vLab Catalog Item Admin"
+		#          #12345678901234567890123456789012345678901234567890123456789012345678901234567890
+		Write-Host
+		Write-Host "vLAB    : $CURRENTVLAB"
+		Write-Host "Released: $reldate"
+		Write-Host "IP      : $wanip"  
+		Write-Host 
+		Write-Host "Virtual Machines:"
+		get-vapp | where { $_.Name -eq "$CURRENTVLAB" } | get-vm | sort Name | format-table 
+		Write-Host "Virtual Networks:"
+		get-virtualportgroup | where { $_.Name -like "$CURRENTVLAB*" } | sort Name | format-table -Property Name,VlanID -Autosize
+		Write-Host "--------------------------------------------------------------------------------"
+		Write-Host " [P]rovision | [S]tart [U]Shutdown [K]ill [L]aunch | [A]dmin | [R]efresh [B]ack "
+		Write-Host "--------------------------------------------------------------------------------"
+		Write-Host " [D]isable [E]nable"
+		Write-Host "--------------------------------------------------------------------------------"		
+		$selection=Read-Host "::>"
+		if     ( "$selection" -eq "b" ) { $done=$true }
+		elseif ( "$selection" -eq "r" ) { $done=$false }
+		elseif ( "$selection" -eq "m" ) { menuMain }
+		elseif ( "$selection" -eq "d" ) { .\remove-vlab "$CURRENTVLAB" }
+		elseif ( "$selection" -eq "e" ) { .\import-vlabtemplate "$CURRENTVLAB" }
 		elseif ( "$selection" -eq "s" ) { get-vapp "$CURRENTVLAB" | get-vm | start-vm }	
 		elseif ( "$selection" -eq "k" ) { get-vapp "$CURRENTVLAB" | get-vm | where { $_.PowerState -eq "PoweredOn" } | stop-vm }	
 		elseif ( "$selection" -eq "u" ) { get-vapp "$CURRENTVLAB" | get-vm | where { $_.PowerState -eq "PoweredOn" } | stop-vmguest }
@@ -209,7 +266,7 @@ function menuAdminMenu {
 	} until ( $done )
 }
 
-# Admin Menu
+# Settings Menu
 function menuSettingsMenu {
 	$done=$false
 	do {
@@ -233,27 +290,5 @@ function menuSettingsMenu {
 	} until ( $done )
 }
 
-
-
-
-
-# Main Menu
-do {
-	Write-Header "Main Menu"
-	#          #12345678901234567890123456789012345678901234567890123456789012345678901234567890
-	Write-Host 
-	Write-Host "1......vLAB Templates"
-	Write-Host "2......vLAB Instances"
-	Write-Host "3......Admin Menu"
-	Write-Host "x......Exit"
-	Write-Host
-	$input = Read-Host "::>"
-	
-	switch ($input) {
-		'1' { menu1vLabCatalog }
-		'2' { menu2vLabInstances }
-		'3' { menuAdminMenu }
-		'x' { return }
-	}
-	#pause
-} until ($input -eq 'q')
+write-header "loading..."
+menuMain
