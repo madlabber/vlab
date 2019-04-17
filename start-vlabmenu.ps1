@@ -3,9 +3,9 @@ $CURRENTVLAB=""
 # Write-Header
 function write-header {
 		Param ([Parameter(Mandatory=$True,ValueFromPipeline=$True,ValueFromPipelinebyPropertyName=$True)]$msg)
-		#       "12345678901234567890123456789012345678901234567890123456789012345678901234567890"
-		$border="--------------------------------------------------------------------------------"
-		$txtbox="                                                         | vLAB Automation Kit |"
+		#       "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"
+		$border="--------------------------------------------------------------------------------------------------------------------"
+		$txtbox="                                                                                             | vLAB Automation Kit |"
 		$txtright=$txtbox.substring(($msg.length +1))
 		
 		cls
@@ -18,7 +18,7 @@ function write-header {
 function menuMain {
     do {
 	    Write-Header "Main Menu"
-	    #          #12345678901234567890123456789012345678901234567890123456789012345678901234567890
+	    #          #1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
     	Write-Host 
 	    Write-Host "1. vLab Catalog"
 	    Write-Host "2. vLab Instances"
@@ -31,7 +31,7 @@ function menuMain {
 	    	'1' { menu1vLabCatalog }
 	    	'2' { menu2vLabInstances }
 	    	'3' { menuAdminMenu }
-	    	'x' { return }
+	    	'x' { exit }
 	    }
 	    #pause
     } until ($input -eq 'q')	
@@ -45,10 +45,10 @@ function menu1vLabCatalog {
 	do {
 		write-header "vLab Catalog"
 		$vLabCatalog | Format-Table
-		#          #12345678901234567890123456789012345678901234567890123456789012345678901234567890
-		Write-Host "--------------------------------------------------------------------------------"
-		Write-Host "Enter vLab Name for Details.                                 | [R]efresh [B]ack "
-		Write-Host "--------------------------------------------------------------------------------"
+		#          #123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
+		Write-Host "--------------------------------------------------------------------------------------------------------------------"
+		Write-Host "Enter vLab Name for Details.                                                                    | [R]efresh [B]ack |"
+		Write-Host "--------------------------------------------------------------------------------------------------------------------"
 		$selection = Read-Host "::>"
 
 		if     ( "$selection" -eq "b" ) { $done=$true }
@@ -76,11 +76,11 @@ function menu2vLabInstances {
 	$done=$false
 	do {
 		write-header "vLab Instances"
-		#          #12345678901234567890123456789012345678901234567890123456789012345678901234567890
+		#          #123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
 		$vlabList | Format-Table
-		Write-Host "--------------------------------------------------------------------------------"
-		Write-Host "Enter vLab Name for Details.                                 | [R]efresh [B]ack "
-		Write-Host "--------------------------------------------------------------------------------"
+		Write-Host "--------------------------------------------------------------------------------------------------------------------"
+		Write-Host "Enter vLab Name for Details.                                                                     | [R]efresh [B]ack "
+		Write-Host "--------------------------------------------------------------------------------------------------------------------"
 		$selection=Read-Host "::>"
 		if     ( "$selection" -eq "b" ) { $done=$true }
 		elseif ( "$selection" -eq "m" ) { menuMain }
@@ -250,8 +250,8 @@ function menuAdminMenu {
 	do {
 		Write-Header "Admin Menu"
 		write-host
-		write-host " 1....Configuration Settings"
-		write-host " 2....Set Credentials"
+		write-host " 1. Configuration Settings"
+		write-host " 2. Set Credentials"
 		write-host
 		write-host
 		write-host		

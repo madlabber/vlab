@@ -16,13 +16,4 @@ $conf=. "$ScriptDirectory\get-vlabsettings.ps1"
 	
 # List volumes that start with lab_
 get-ncvol | where { $_.Name -like "lab_*" } | where { ! $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name }
-
-
-
-
-
-
-
-
-
-		 
+ 

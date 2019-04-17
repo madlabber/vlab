@@ -29,6 +29,7 @@ $conf=. "$ScriptDirectory\get-vlabsettings.ps1"
 #region Establish connections	
 	# Connect to vCenter
 	if (  $defaultVIServer.Name -ne $conf.vCenter ) {
+		[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 		$VICred = Import-CliXml "$ScriptDirectory\vicred.clixml"
 		$result=$(Connect-VIServer -Server $conf.vCenter -credential $VICred )
 	}
