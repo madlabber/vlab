@@ -35,7 +35,7 @@ $output+="<tr>" `
         +"</tr>"
 foreach($labvol in $labvols){
     $output+="<tr>" `
-            +"<td>"+$labvol.Name+"</td>" `
+            +'<tr><td><a href="/instance?'+$labvol+'">'+$labvol+'</a></td>' `
             +"<td>"+$powerstate[$labvol.Name]+"</td>" `
             +"<td>"+($labvol.TotalSize / 1GB).tostring("n1")+" GB</td>" `
             +"<td>"+$($labvol.Used/100).tostring("p0")+"</td>" `
