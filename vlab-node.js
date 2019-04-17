@@ -88,7 +88,9 @@ http.createServer(
       child.on("exit",function(){
           console.log("Script finished");
           res.write('<hr>');
-          res.write('[Start][Stop][Kill][Destroy]');
+          res.write('<a href="/start?'+url.query+'">[Start]</a>');
+          res.write('<a href="/stop?'+url.query+'">[Stop]</a>');
+          res.write('[Kill][Destroy]');
           res.end('<br>');
       });
       child.stdin.end();       
@@ -112,11 +114,43 @@ http.createServer(
     // Provision
     else if (pathName === '/provision') {
       res.writeHead(200, {'Content-Type': 'text/html'});
-      res.write('vLab Configuration');
+      res.write('vLab Provisioning...');
       res.write('<hr>');
 
       var spawn = require("child_process").spawn,child;
       child = spawn("powershell.exe",[require.resolve("./new-vlab.ps1"),url.query]);
+      child.stdout.on("data",function(data){res.write("<br>"+data)});
+      child.stderr.on("data",function(data){console.log(""+data)});
+      child.on("exit",function(){
+          console.log("Script finished");
+          res.end('Done.');
+      });
+      child.stdin.end();     
+    } 
+    // start
+    else if (pathName === '/start') {
+      res.writeHead(200, {'Content-Type': 'text/html'});
+      res.write('vLab Starting...');
+      res.write('<hr>');
+
+      var spawn = require("child_process").spawn,child;
+      child = spawn("powershell.exe",[require.resolve("./start-vlab.ps1"),url.query]);
+      child.stdout.on("data",function(data){res.write("<br>"+data)});
+      child.stderr.on("data",function(data){console.log(""+data)});
+      child.on("exit",function(){
+          console.log("Script finished");
+          res.end('Done.');
+      });
+      child.stdin.end();     
+    } 
+    // stop
+    else if (pathName === '/stop') {
+      res.writeHead(200, {'Content-Type': 'text/html'});
+      res.write('vLab Stopping...');
+      res.write('<hr>');
+
+      var spawn = require("child_process").spawn,child;
+      child = spawn("powershell.exe",[require.resolve("./stop-vlab.ps1"),url.query]);
       child.stdout.on("data",function(data){res.write("<br>"+data)});
       child.stderr.on("data",function(data){console.log(""+data)});
       child.on("exit",function(){
