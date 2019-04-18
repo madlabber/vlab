@@ -12,10 +12,29 @@ Param(
     [Parameter(Position=1)][string]$CURRENTVLAB
 )
 
-# Settings
 $ScriptDirectory = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
+
+# Keep a session to maintain state
+$session=get-pssession -ComputerName "localhost" -Name "node-vlab" | where { $_.State -eq "Disconnected" } | select-object -first 1
+if ($session) { $result=$session | connect-pssession }
+else { 
+    $session=new-pssession -ComputerName "localhost" -Name "node-vlab" 
+    $result=$session | connect-pssession
+    $result=invoke-command -session $session -scriptblock {
+        param($ScriptDirectory)
+        $conf=. "$ScriptDirectory\get-vlabsettings.ps1"
+        & "$ScriptDirectory\Connect-vLabResources.ps1"
+    } -ArgumentList $ScriptDirecoy
+}
+
+$result=invoke-command -session $session -scriptblock { 
+param($CURRENTVLAB,
+      $ScriptDirectory
+)
+
+# Settings
 $conf=. "$ScriptDirectory\get-vlabsettings.ps1"
-& "$ScriptDirectory\Connect-vLabResources.ps1"
+#& "$ScriptDirectory\Connect-vLabResources.ps1"
 
 $wanip=""
 $reldate=""
@@ -50,5 +69,8 @@ foreach ($vm in $vms) {
 
 Write-Host "</table>"
 
+} -ArgumentList $CURRENTVLAB,$ScriptDirectory
+
+$result=disconnect-pssession -Name "node-vlab" -IdleTimeoutSec 6000 -WarningAction silentlyContinue
 #}
 

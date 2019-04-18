@@ -8,25 +8,30 @@
 .NOTES
 
 #>
+# Keep a session to maintain state
+$session=get-pssession -ComputerName "localhost" -Name "node-vlab" | where { $_.State -eq "Disconnected" } | select-object -first 1
+if ($session) { $result=$session | connect-pssession }
+else { 
+    $session=new-pssession -ComputerName "localhost" -Name "node-vlab" 
+    $result=$session | connect-pssession
+    $result=invoke-command -session $session -scriptblock {
+        param($ScriptDirectory)
+        $conf=. "$ScriptDirectory\get-vlabsettings.ps1"
+        & "$ScriptDirectory\Connect-vLabResources.ps1"
+    } -ArgumentList $ScriptDirecoy
+}
+
+$ScriptDirectory = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
+
+$result=invoke-command -session $session -scriptblock { 
+param($ScriptDirectory)
 
 # Settings
-$ScriptDirectory = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
 $conf=. "$ScriptDirectory\get-vlabsettings.ps1"
 #& "$ScriptDirectory\Connect-vLabResources.ps1"
-    $ncModule=get-module | where { $_.Name -eq "DataONTAP" }
-    if ( !$ncModule ) { 
-        import-module DataONTAP 
-    }
-    # Connect to NetApp Cluster 
-    if ( $CurrentNcController.Name -ne $conf.cluster_mgmt ) {
-        $NCCred = Import-CliXml "$ScriptDirectory\nccred.clixml"
-        $result=$(Connect-NcController $conf.cluster_mgmt -vserver $conf.vserver -credential $NCCred )
-    }
 
 # Descriptions
 $descriptions=. "$ScriptDirectory\get-vlabdescriptions.ps1"
-#load settings from file
-#$descriptions = Get-Content ".\descriptions.cfg" | Out-String | ConvertFrom-StringData
 
 # Catalog entries are vols that are not flexclones
 $labvols=get-ncvol | where { $_.Name -like "lab_*" } | where { ! $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name }
@@ -40,4 +45,7 @@ foreach($labvol in $labvols){
     $output+="</td></tr>"
 }
 $output+="</table>"
-$output
+$output | Write-Host
+} -ArgumentList $ScriptDirectory
+
+$result=disconnect-pssession -Name "node-vlab" -IdleTimeoutSec 6000 -WarningAction silentlyContinue

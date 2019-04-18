@@ -9,21 +9,32 @@
     Parameters are supplied by configuration file.
 #>
 
-# Settings
+# Keep a session to maintain state
+$session=get-pssession -ComputerName "localhost" -Name "node-vlab" | where { $_.State -eq "Disconnected" } | select-object -first 1
+if ($session) { $result=$session | connect-pssession }
+else { 
+    $session=new-pssession -ComputerName "localhost" -Name "node-vlab" 
+    $result=$session | connect-pssession
+    $result=invoke-command -session $session -scriptblock {
+        param($ScriptDirectory)
+        $conf=. "$ScriptDirectory\get-vlabsettings.ps1"
+        & "$ScriptDirectory\Connect-vLabResources.ps1"
+    } -ArgumentList $ScriptDirecoy
+}
+
 $ScriptDirectory = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
+
+$result=invoke-command -session $session -scriptblock { 
+param($ScriptDirectory)
+
+# Settings
 $conf=. "$ScriptDirectory\get-vlabsettings.ps1"
-& "$ScriptDirectory\Connect-vLabResources.ps1"
+#& "$ScriptDirectory\Connect-vLabResources.ps1"
 
 #get power status
 $result=get-vapp | foreach { $powerstate = @{} } { $powerstate[$_.Name] = $_.Status }
 # List volumes that start with lab_ that are NOT flexclones
 $labvols=get-ncvol | where { $_.Name -like "lab_*" } | where { $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name } | sort
-#$report | format-table
-#$labvols | FT 	@{Label="Name";Expression={$_.Name};width=24}, 
-#				@{Label="Status";Expression={$powerstate[$_.Name]};width=8;align='left'}, 
-#				@{Label="TotalSize";Expression={($_.TotalSize / 1GB).tostring("n1")+" GB"};width=12;align='right'}, 
-#				@{Label="Used";Expression={$($_.Used/100).tostring("p0")};width=5;align='right'}, 
-#				@{Label="Available";Expression={($_.Available / 1GB).tostring("n1")+" GB"};width=12;align='right'} 
 
 $output="<table>"
 $output+="<tr>" `
@@ -43,4 +54,7 @@ foreach($labvol in $labvols){
             +"</tr>"
 }
 $output+="</table>"
-$output
+$output | Write-Host
+} -ArgumentList $ScriptDirectory
+
+$result=disconnect-pssession -Name "node-vlab" -IdleTimeoutSec 6000 -WarningAction silentlyContinue
