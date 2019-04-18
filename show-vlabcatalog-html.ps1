@@ -28,7 +28,7 @@ param($ScriptDirectory)
 
 # Settings
 $conf=. "$ScriptDirectory\get-vlabsettings.ps1"
-#& "$ScriptDirectory\Connect-vLabResources.ps1"
+& "$ScriptDirectory\Connect-vLabResources.ps1"
 
 # Descriptions
 $descriptions=. "$ScriptDirectory\get-vlabdescriptions.ps1"

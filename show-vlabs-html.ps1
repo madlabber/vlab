@@ -29,7 +29,7 @@ param($ScriptDirectory)
 
 # Settings
 $conf=. "$ScriptDirectory\get-vlabsettings.ps1"
-#& "$ScriptDirectory\Connect-vLabResources.ps1"
+& "$ScriptDirectory\Connect-vLabResources.ps1"
 
 #get power status
 $result=get-vapp | foreach { $powerstate = @{} } { $powerstate[$_.Name] = $_.Status }
