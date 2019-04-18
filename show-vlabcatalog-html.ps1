@@ -14,11 +14,6 @@ if ($session) { $result=$session | connect-pssession }
 else { 
     $session=new-pssession -ComputerName "localhost" -Name "node-vlab" 
     $result=$session | connect-pssession
-    $result=invoke-command -session $session -scriptblock {
-        param($ScriptDirectory)
-        $conf=. "$ScriptDirectory\get-vlabsettings.ps1"
-        & "$ScriptDirectory\Connect-vLabResources.ps1"
-    } -ArgumentList $ScriptDirecoy
 }
 
 $ScriptDirectory = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
