@@ -88,9 +88,10 @@ http.createServer(
       child.on("exit",function(){
           console.log("Script finished");
           res.write('<hr>');
-          res.write('<a href="/start?'+url.query+'">[Start]</a>');
-          res.write('<a href="/stop?'+url.query+'">[Stop]</a>');
-          res.write('[Kill][Destroy]');
+          res.write('<a href="/start?'+url.query+'">[Start]</a> ');
+          res.write('<a href="/stop?'+url.query+'">[Stop]</a> ');
+          res.write('<a href="/kill?'+url.query+'">[Kill]</a> ');
+          res.write('<a href="/destroy?'+url.query+'">[Destroy]</a> ');
           res.end('<br>');
       });
       child.stdin.end();       
@@ -123,6 +124,7 @@ http.createServer(
       child.stderr.on("data",function(data){console.log(""+data)});
       child.on("exit",function(){
           console.log("Script finished");
+          res.write('<script type="text/javascript">window.location = window.history.back();</script>');
           res.end('Done.');
       });
       child.stdin.end();     
@@ -139,6 +141,7 @@ http.createServer(
       child.stderr.on("data",function(data){console.log(""+data)});
       child.on("exit",function(){
           console.log("Script finished");
+          res.write('<script type="text/javascript">window.location = window.history.back();</script>');
           res.end('Done.');
       });
       child.stdin.end();     
@@ -155,6 +158,41 @@ http.createServer(
       child.stderr.on("data",function(data){console.log(""+data)});
       child.on("exit",function(){
           console.log("Script finished");
+          res.write('<script type="text/javascript">window.location = window.history.back();</script>');
+          res.end('Done.');
+      });
+      child.stdin.end();     
+    } 
+    // kill
+    else if (pathName === '/kill') {
+      res.writeHead(200, {'Content-Type': 'text/html'});
+      res.write('vLab Stopping...');
+      res.write('<hr>');
+
+      var spawn = require("child_process").spawn,child;
+      child = spawn("powershell.exe",[require.resolve("./stop-vlab.ps1"),url.query,"-kill"]);
+      child.stdout.on("data",function(data){res.write("<br>"+data)});
+      child.stderr.on("data",function(data){console.log(""+data)});
+      child.on("exit",function(){
+          console.log("Script finished");
+          res.write('<script type="text/javascript">window.location = window.history.back();</script>');
+          res.end('Done.');
+      });
+      child.stdin.end();     
+    } 
+    // destroy
+    else if (pathName === '/destroy') {
+      res.writeHead(200, {'Content-Type': 'text/html'});
+      res.write('Destroying vLab...');
+      res.write('<hr>');
+
+      var spawn = require("child_process").spawn,child;
+      child = spawn("powershell.exe",[require.resolve("./remove-vlab.ps1"),url.query]);
+      child.stdout.on("data",function(data){res.write("<br>"+data)});
+      child.stderr.on("data",function(data){console.log(""+data)});
+      child.on("exit",function(){
+          console.log("Script finished");
+          res.write('<script type="text/javascript">window.location = "/instances";</script>');
           res.end('Done.');
       });
       child.stdin.end();     
