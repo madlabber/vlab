@@ -33,7 +33,11 @@ $conf=. "$ScriptDirectory\get-vlabsettings.ps1"
 		$VICred = Import-CliXml "$ScriptDirectory\vicred.clixml"
 		$result=$(Connect-VIServer -Server $conf.vCenter -credential $VICred )
 	}
-	
+	if ( ! $defaultVIServer.IsConnectedr ) {
+		[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+		$VICred = Import-CliXml "$ScriptDirectory\vicred.clixml"
+		$result=$(Connect-VIServer -Server $conf.vCenter -credential $VICred )
+	}	
 	# Connect to NetApp Cluster	
 	if ( $CurrentNcController.Name -ne $conf.cluster_mgmt ) {
 		$NCCred = Import-CliXml "$ScriptDirectory\nccred.clixml"

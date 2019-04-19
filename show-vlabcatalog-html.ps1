@@ -32,10 +32,10 @@ $descriptions=. "$ScriptDirectory\get-vlabdescriptions.ps1"
 $labvols=get-ncvol | where { $_.Name -like "lab_*" } | where { ! $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name }
 
 $output="<table>"
-$output+="<tr><td><u>Name</u></td><td></td><td><u>Description</u></td></tr>"
+$output+="<tr><td width=180px><u>Name</u></td><td></td><td><u>Description</u></td></tr>"
 foreach($labvol in $labvols){
     $output+='<tr><td><a href="/item?'+$labvol+'">'+$labvol+'</a></td>'      
-    $output+="<td> : </td><td>"    
+    $output+="<td></td><td>"    
     $output+=$descriptions[$labvol.Name]
     $output+="</td></tr>"
 }
