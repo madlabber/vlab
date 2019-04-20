@@ -208,9 +208,9 @@ http.createServer(
     else {
       res.writeHead(200, {'Content-Type': 'text/html'});
       res.write(''+navbar);
-      res.write('Menu');
+      res.write("It doesn't look like anything to me.");
       res.write('<hr>');
-      res.write('<a href="/catalog">vLab Catalog</a>');
+      res.write('<a href="/">Take me Home</a>');
       res.end('<hr>'+req.url);  
     }
   }

@@ -48,9 +48,9 @@ Write-Host "<table>"
 Write-Host "<tr><td><b>Name:</b></td><td> $CURRENTVLAB </td></tr>"
 Write-Host "<tr><td><b>Date:</b></td><td> $reldate </td></tr>"
 if ( $wanip ){ 
-    $row='<tr><td><b>IP:</b></td><td><a href="rdp://'
+    $row='<tr><td><b>IP:</b></td><td><a href="rdp://full%20address=s:'
     $row+="$wanip"
-    $row+='=s:'+"$CURRENTVLAB"+':3389&audiomode=i:2&disable%20themes=i:1">'+"$wanip"+'</a></td></tr>' 
+    $row+=':3389&audiomode=i:2&disable%20themes=i:1">'+"$wanip"+'</a></td></tr>' 
     Write-Host $row }
 Write-Host "</table>"
 
