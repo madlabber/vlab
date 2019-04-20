@@ -8,6 +8,8 @@ http.createServer(
 
     var navbar = '<center><h2>Homelab On Demand</h2> <a href="/">[Home]</a> <a href="/catalog">[Catalog]</a> <a href="/instances">[Instances]</a> <a href="/admin">[Admin]</a></center><hr>';
 
+    res.on('error', function(data){console.log(""+data)});
+    
     console.log(''+req.url);
     // Main 
     if (pathName === '/') { 
