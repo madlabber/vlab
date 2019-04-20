@@ -9,7 +9,7 @@ http.createServer(
     var navbar = '<center><h2>Homelab On Demand</h2> <a href="/">[Home]</a> <a href="/catalog">[Catalog]</a> <a href="/instances">[Instances]</a> <a href="/admin">[Admin]</a></center><hr>';
 
     res.on('error', function(data){console.log(""+data)});
-    
+
     console.log(''+req.url);
     // Main 
     if (pathName === '/') { 
@@ -58,9 +58,16 @@ http.createServer(
       res.writeHead(200, {'Content-Type': 'text/html'});
       res.write(''+navbar);
       res.write('<b>Lab Administration:</b><hr><br>');
-      res.write('<a href="/config">Configuration Settings</a><br>');
-      //res.write('<a href="/instances">vLab Instances</a><br>');
-      res.end('<br><hr>:<hr>'); 
+
+      var spawn = require("child_process").spawn,child;
+      child = spawn("powershell.exe",[require.resolve("./show-adminmenu-html.ps1"),url.query]);
+      child.stdout.on("data",function(data){res.write(""+data)});
+      child.stderr.on("data",function(data){console.log(""+data)});
+      child.on("exit",function(){
+          console.log("Script finished");
+          res.end('<br><hr>:<hr>');
+      });
+      child.stdin.end();  
     }
     // Item Detail
     else if (pathName === '/item') {
@@ -129,7 +136,7 @@ http.createServer(
       child.stderr.on("data",function(data){console.log(""+data)});
       child.on("exit",function(){
           console.log("Script finished");
-          res.write('<script type="text/javascript">javascript:history.go(-1);</script>');
+          res.write('<script type="text/javascript">javascript:window.location.href(history.go(-1));</script>');
           res.end('Done.');
       });
       child.stdin.end();     
@@ -147,7 +154,7 @@ http.createServer(
       child.stderr.on("data",function(data){console.log(""+data)});
       child.on("exit",function(){
           console.log("Script finished");
-          res.write('<script type="text/javascript">javascript:history.go(-1);</script>');
+          res.write('<script type="text/javascript">window.location = "/instance?'+url.query+'";</script>');
           res.end('Done.');
       });
       child.stdin.end();     
@@ -165,7 +172,7 @@ http.createServer(
       child.stderr.on("data",function(data){console.log(""+data)});
       child.on("exit",function(){
           console.log("Script finished");
-          res.write('<script type="text/javascript">javascript:history.go(-1);</script>');
+          res.write('<script type="text/javascript">window.location = "/instance?'+url.query+'";</script>');
           res.end('Done.');
       });
       child.stdin.end();     
@@ -183,7 +190,7 @@ http.createServer(
       child.stderr.on("data",function(data){console.log(""+data)});
       child.on("exit",function(){
           console.log("Script finished");
-          res.write('<script type="text/javascript">javascript:history.go(-1);</script>');
+          res.write('<script type="text/javascript">window.location = "/instance?'+url.query+'";</script>');
           res.end('Done.');
       });
       child.stdin.end();     
