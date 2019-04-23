@@ -1,4 +1,17 @@
 var http = require('http');
+var fs = require('fs');
+var path = require('path');
+
+var mimeTypes = {
+  "html": "text/html",
+  "mp3":"audio/mpeg",
+  "mp4":"video/mp4",
+  "jpeg": "image/jpeg",
+  "jpg": "image/jpeg",
+  "png": "image/png",
+  "js": "text/javascript",
+  "css": "text/css",
+  "ico": "image/x-icon"};
 
 http.createServer(
   function (req, res) {
@@ -6,7 +19,7 @@ http.createServer(
     var url = require('url').parse(req.url)
     let pathName = url.pathname
 
-    var navbar = '<center><h2>Homelab On Demand</h2> <a href="/">[Home]</a> <a href="/catalog">[Catalog]</a> <a href="/instances">[Instances]</a> <a href="/admin">[Admin]</a></center><hr>';
+    var navbar = '<center><h2>Homelab On Demand</h2> <a href="/">Home</a> | <a href="/catalog">Catalog</a> | <a href="/instances">Instances</a> | <a href="/admin">Admin</a></center><hr>';
 
     res.on('error', function(data){console.log(""+data)});
 
@@ -82,8 +95,10 @@ http.createServer(
       child.on("exit",function(){
           console.log("Script finished");
           res.write('<hr>');
-          res.write('<a href="/provision?'+url.query+'">[Provision]</a>');
-          res.end('<hr>');
+          res.write('<form method="post" action="/provision?'+url.query+'">');
+          res.write('<button type="submit">Provision</button><hr>');
+          res.write('</form>');
+          res.end(' ');
       });
       child.stdin.end();     
     } 
@@ -213,14 +228,31 @@ http.createServer(
       });
       child.stdin.end();     
     } 
-    // Catch all
-    else {
-      res.writeHead(200, {'Content-Type': 'text/html'});
-      res.write(''+navbar);
-      res.write("It doesn't look like anything to me.");
-      res.write('<hr>');
-      res.write('<a href="/">Take me Home</a>');
-      res.end('<hr>'+req.url);  
+    // Otherwise serve a file
+    else {     
+      console.log(pathName);
+      var filename = path.join(process.cwd(), pathName);
+      console.log(filename);
+      fs.exists(filename, function(exists) {
+        if(!exists) {
+          console.log("404: "+req.url);
+          res.writeHead(404, {"Content-Type":"text/html"});
+          res.write(''+navbar);
+          res.write("It doesn't look like anything to me.");
+          res.write('<hr>');
+          res.write('<a href="/">Take me Home</a>');
+          res.write('<hr>'+req.url);  
+          res.end();
+          //return;
+        }
+        else {
+        var mimeType = mimeTypes[path.extname(filename).split(".")[1]];
+        res.writeHead(200, {'Content-Type':mimeType});
+
+        var fileStream = fs.createReadStream(filename);
+        fileStream.pipe(res);
+        }
+      });
     }
   }
 ).listen(8080);

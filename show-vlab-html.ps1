@@ -44,6 +44,7 @@ $relsnap=get-ncvol | where { $_.Name -eq "$CURRENTVLAB" } | get-ncsnapshot | whe
 if ( $relsnap ) { $reldate=$relsnap.Created }
 else { $reldate = "NOT RELEASED" }
 
+Write-Host "<table><tr><td valign=top width=40%>"
 Write-Host "<table>"
 Write-Host "<tr><td><b>Name:</b></td><td> $CURRENTVLAB </td></tr>"
 Write-Host "<tr><td><b>Date:</b></td><td> $reldate </td></tr>"
@@ -52,23 +53,28 @@ if ( $wanip ){
     $row+="$wanip"
     $row+=':3389&audiomode=i:2&disable%20themes=i:1">'+"$wanip"+'</a></td></tr>' 
     Write-Host $row }
+
 Write-Host "</table>"
 
 Write-Host "<br><b>Virtual Machines:</b><br>"
 Write-Host "<table>"
-Write-Host "<tr><td><u>Name</u></td><td><u>PowerState</u></td><td><u>Num CPUs</u></td><td><u>MemoryGB</u></td></tr>"
+Write-Host "<tr><td><u>Name</u></td><td><u>PowerState</u></td><td><u>vCPUs</u></td><td><u>MemoryGB</u></td></tr>"
 $vms=get-vapp | where { $_.Name -eq "$CURRENTVLAB" } | get-vm | sort Name 
 foreach ($vm in $vms) {
     Write-Host "<tr>"
     Write-Host "<td>"$vm.Name"</td>"
     Write-Host "<td>"$vm.PowerState"</td>"
-    Write-Host "<td>"$vm.NumCpu"</td>"
-    Write-Host "<td>"$vm.MemoryGB"</td>"
+    Write-Host "<td align=center> "$vm.NumCpu"</td>"
+    Write-Host "<td> "$vm.MemoryGB"</td>"
     Write-Host "</tr>"
 }
 
 Write-Host "</table>"
-
+Write-Host "</td><td  valign=top>"
+$diagram="$CURRENTVLAB`.jpg"
+if ( Test-Path "$ScriptDirectory\$diagram" -PathType Leaf ){
+Write-Host "<img src=$diagram alt=lab_diagram width=500>"}
+Write-Host "</td></tr></table>"
 } -ArgumentList $CURRENTVLAB,$ScriptDirectory
 
 $result=disconnect-pssession -Name "node-vlab" -IdleTimeoutSec 6000 -WarningAction silentlyContinue
