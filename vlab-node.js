@@ -115,11 +115,18 @@ http.createServer(
       child.on("exit",function(){
           console.log("Script finished");
           res.write('<hr>');
-          res.write('<a href="/start?'+url.query+'">[Start]</a> ');
-          res.write('<a href="/stop?'+url.query+'">[Stop]</a> ');
-          res.write('<a href="/kill?'+url.query+'">[Kill]</a> ');
-          res.write('<a href="/destroy?'+url.query+'">[Destroy]</a> ');
-          res.end('<hr>');
+          //res.write('<a href="/start?'+url.query+'">[Start]</a> ');
+          //res.write('<a href="/stop?'+url.query+'">[Stop]</a> ');
+          //res.write('<a href="/kill?'+url.query+'">[Kill]</a> ');
+          //res.write('<a href="/destroy?'+url.query+'">[Destroy]</a> ');
+          res.write('<form method="post" action="/start?'+url.query+'">');
+          res.write('<button type="submit">Start</button> ');
+          res.write('<button type="submit" formaction="/stop?'+url.query+'">Stop</button> ');          
+          res.write('<button type="submit" formaction="/kill?'+url.query+'">Kill</button> ');  
+          res.write('<button type="submit" formaction="/destroy?'+url.query+'">Destroy</button> '); 
+          res.write('<hr>');
+          res.write('</form>');
+          res.end(' ');
       });
       child.stdin.end();       
     } 

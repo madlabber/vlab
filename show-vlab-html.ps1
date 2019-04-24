@@ -36,33 +36,42 @@ param($CURRENTVLAB,
 $conf=. "$ScriptDirectory\get-vlabsettings.ps1"
 & "$ScriptDirectory\Connect-vLabResources.ps1"
 
+# Descriptions
+$descriptions=. "$ScriptDirectory\get-vlabdescriptions.ps1"
+
 $wanip=""
 $reldate=""
 $gateway=get-vapp "$CURRENTVLAB" | get-vm | where { $_.Name -eq "gateway" }
 if ( $gateway ) { $wanip=$gateway.guest.IPAddress[0] }
-$relsnap=get-ncvol | where { $_.Name -eq "$CURRENTVLAB" } | get-ncsnapshot | where { $_.Name -eq "master" }
+$labvol=get-ncvol | where { $_.Name -eq "$CURRENTVLAB" }
+$relsnap=$labvol | get-ncsnapshot | where { $_.Name -eq "master" }
 if ( $relsnap ) { $reldate=$relsnap.Created }
 else { $reldate = "NOT RELEASED" }
+$parent=$labvol.VolumeCloneAttributes.VolumeCloneParentAttributes.Name 
+if ( ! $parent ) { $parent=$CURRENTVLAB}
+#Write-Host $parent
 
-Write-Host "<table><tr><td valign=top width=40%>"
+
+
 Write-Host "<table>"
 Write-Host "<tr><td><b>Name:</b></td><td> $CURRENTVLAB </td></tr>"
+Write-Host "<tr><td><b>Description:</b></td><td> $($descriptions[$parent]) </td></tr>"
 Write-Host "<tr><td><b>Date:</b></td><td> $reldate </td></tr>"
 if ( $wanip ){ 
     $row='<tr><td><b>IP:</b></td><td><a href="rdp://full%20address=s:'
     $row+="$wanip"
     $row+=':3389&audiomode=i:2&disable%20themes=i:1">'+"$wanip"+'</a></td></tr>' 
     Write-Host $row }
+Write-Host "</table><br>"
 
-Write-Host "</table>"
-
-Write-Host "<br><b>Virtual Machines:</b><br>"
+Write-Host "<table><tr><td valign=top width=40%>"
+Write-Host "<b>Virtual Machines:</b><br>"
 Write-Host "<table>"
 Write-Host "<tr><td><u>Name</u></td><td><u>PowerState</u></td><td><u>vCPUs</u></td><td><u>MemoryGB</u></td></tr>"
 $vms=get-vapp | where { $_.Name -eq "$CURRENTVLAB" } | get-vm | sort Name 
 foreach ($vm in $vms) {
     Write-Host "<tr>"
-    Write-Host "<td>"$vm.Name"</td>"
+    Write-Host "<td width=120px>"$vm.Name"</td>"
     Write-Host "<td>"$vm.PowerState"</td>"
     Write-Host "<td align=center> "$vm.NumCpu"</td>"
     Write-Host "<td> "$vm.MemoryGB"</td>"
@@ -70,10 +79,11 @@ foreach ($vm in $vms) {
 }
 
 Write-Host "</table>"
-Write-Host "</td><td  valign=top>"
-$diagram="$CURRENTVLAB`.jpg"
-if ( Test-Path "$ScriptDirectory\$diagram" -PathType Leaf ){
-Write-Host "<img src=$diagram alt=lab_diagram width=500>"}
+Write-Host "</td><td width=10px></td><td  valign=top>"
+$diagram="$parent`.jpg"
+if ( Test-Path "$ScriptDirectory\cmdb\$diagram" -PathType Leaf ){
+Write-Host "<b>Topology:</b><br>"
+Write-Host "<img src=cmdb/$diagram alt=lab_diagram width=500>"}
 Write-Host "</td></tr></table>"
 } -ArgumentList $CURRENTVLAB,$ScriptDirectory
 
