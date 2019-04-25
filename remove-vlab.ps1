@@ -21,9 +21,11 @@ $conf=. "$ScriptDirectory\get-vlabsettings.ps1"
 & "$ScriptDirectory\Connect-vLabResources.ps1"
 
 # Power off the VMs
+Write-Host "Powering off VMs."
 get-vapp $vApp | get-vm | where { $_.PowerState -eq "PoweredOn" } | stop-vm -confirm:$false
 
 # remove the portgroups
+Write-Host "Removing port groups."
 $portGroups=get-vapp $vApp | get-vm | get-virtualportgroup | where { $_.Name -like "$vApp*" }
 foreach ( $pg in $portGroups ) {
 	get-cluster | ?{ $_.Name -eq $conf.VICluster } | get-vmhost | get-virtualswitch | ?{ $_.Name -eq $conf.vswitch} | get-virtualportgroup | ?{ $_.Name -eq $pg.Name } | remove-virtualportgroup -confirm:$false
@@ -31,13 +33,15 @@ foreach ( $pg in $portGroups ) {
 }
 
 # remove the vApp
-get-vapp $vApp | remove-vApp -confirm:$false
+Write-Host "Removing vApp."
+$result=get-vapp $vApp | remove-vApp -confirm:$false
 
 # remove datastore if mounted for authoring
-Get-Datastore -Name $vApp.Name | remove-datastore -confirm:$false
+Write-Host "Removing Datastore."
+$result=Get-Datastore -Name $vApp.Name | remove-datastore -confirm:$false
 
 # dismount the volume
-get-ncvol $vApp | dismount-ncvol 
+$result=get-ncvol $vApp | dismount-ncvol 
 
 # remove the volume if it is a clone
-get-ncvol $vApp | where { $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name } | set-ncvol -offline | remove-ncvol -confirm:$false
+$result=get-ncvol $vApp | where { $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name } | set-ncvol -offline | remove-ncvol -confirm:$false

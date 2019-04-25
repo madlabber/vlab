@@ -19,7 +19,7 @@ http.createServer(
     var url = require('url').parse(req.url)
     let pathName = url.pathname
 
-    var navbar = '<center><h2>Homelab On Demand</h2> <a href="/">Home</a> | <a href="/catalog">Catalog</a> | <a href="/instances">Instances</a> | <a href="/admin">Admin</a></center><hr>';
+    var navbar = '<center><table><tr><td><center><b><font size=5>Homelab On Demand</font></b></center></td></tr><tr><td><center><a href="/">Home</a> | <a href="/catalog">Catalog</a> | <a href="/instances">Instances</a> | <a href="/admin">Admin</a></center></td></tr></table></center><hr>';
 
     res.on('error', function(data){console.log(""+data)});
 
@@ -115,10 +115,6 @@ http.createServer(
       child.on("exit",function(){
           console.log("Script finished");
           res.write('<hr>');
-          //res.write('<a href="/start?'+url.query+'">[Start]</a> ');
-          //res.write('<a href="/stop?'+url.query+'">[Stop]</a> ');
-          //res.write('<a href="/kill?'+url.query+'">[Kill]</a> ');
-          //res.write('<a href="/destroy?'+url.query+'">[Destroy]</a> ');
           res.write('<form method="post" action="/start?'+url.query+'">');
           res.write('<button type="submit">Start</button> ');
           res.write('<button type="submit" formaction="/stop?'+url.query+'">Stop</button> ');          
@@ -175,7 +171,10 @@ http.createServer(
 
       var spawn = require("child_process").spawn,child;
       child = spawn("powershell.exe",[require.resolve("./start-vlab.ps1"),url.query]);
-      child.stdout.on("data",function(data){res.write("<br>"+data)});
+      child.stdout.on("data",function(data){
+        var strData = ''+data;
+        if (strData.trim() != '') {res.write(""+data+" <br>")}
+      });
       child.stderr.on("data",function(data){console.log(""+data)});
       child.on("exit",function(){
           console.log("Script finished");
@@ -193,7 +192,10 @@ http.createServer(
 
       var spawn = require("child_process").spawn,child;
       child = spawn("powershell.exe",[require.resolve("./stop-vlab.ps1"),url.query]);
-      child.stdout.on("data",function(data){res.write("<br>"+data)});
+      child.stdout.on("data",function(data){
+        var strData = ''+data;
+        if (strData.trim() != '') {res.write(""+data+" <br>")}
+      });
       child.stderr.on("data",function(data){console.log(""+data)});
       child.on("exit",function(){
           console.log("Script finished");
@@ -211,7 +213,10 @@ http.createServer(
 
       var spawn = require("child_process").spawn,child;
       child = spawn("powershell.exe",[require.resolve("./stop-vlab.ps1"),url.query,"-kill"]);
-      child.stdout.on("data",function(data){res.write("<br>"+data)});
+      child.stdout.on("data",function(data){
+        var strData = ''+data;
+        if (strData.trim() != '') {res.write(""+data+" <br>")}
+      });
       child.stderr.on("data",function(data){console.log(""+data)});
       child.on("exit",function(){
           console.log("Script finished");
@@ -229,7 +234,10 @@ http.createServer(
 
       var spawn = require("child_process").spawn,child;
       child = spawn("powershell.exe",[require.resolve("./remove-vlab.ps1"),url.query]);
-      child.stdout.on("data",function(data){res.write("<br>"+data)});
+      child.stdout.on("data",function(data){
+        var strData = ''+data;
+        if (strData.trim() != '') {res.write(""+data+" <br>")}
+      });
       child.stderr.on("data",function(data){console.log(""+data)});
       child.on("exit",function(){
           console.log("Script finished");

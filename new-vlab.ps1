@@ -20,13 +20,14 @@ Param(
   [Parameter][string]$VMHost
 )
 
+Write-Host "Authenticating."
 #region Settings
 $ScriptDirectory = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
 $conf=. "$ScriptDirectory\get-vlabsettings.ps1"
 & "$ScriptDirectory\Connect-vLabResources.ps1"
 
 # Settings
-$newID=100
+$newID=$conf.newID
 
 # Pick the host with the most free ram unless specified by config file or parameter
 Write-Host "Selecting VM Host."
@@ -117,8 +118,8 @@ $pgID=1
 $networkAdapters=$cloneApp | get-vm | get-networkadapter
 foreach($srcPortGroup in $($srcApp | get-vm | get-virtualportgroup | where { $_.Name -like "$vApp*" })) {
 	$pgName="$vAppNew"+"_$pgID"
+	write-host "....$srcPortGroup => $pgName"	
 	$result=$networkAdapters | where {$_.NetworkName -eq $srcPortGroup } | set-networkadapter -NetworkName "$pgName" -confirm:$false
-	write-host "....$srcPortGroup => $pgName"
 	$pgID++
 }
 $result=get-vapp $vAppNew | get-vm | get-networkadapter | where { $_.NetworkName -notlike "$vAppNew*"} | set-networkadapter -NetworkName $conf.VIPortgroup -confirm:$false
@@ -182,12 +183,3 @@ if ( $conf.autostart -eq "true" ){
 
 # Drop the vApp into the pipeline
 get-vapp $vAppNew
-
-
-
-
-
-
-
-
-

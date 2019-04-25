@@ -24,7 +24,8 @@ $conf=. "$ScriptDirectory\get-vlabsettings.ps1"
 & "$ScriptDirectory\Connect-vLabResources.ps1"
 
 # Settings
-$newID=100
+$newID=$conf.newID
+
 # Pick the host with the most free ram unless specified by config file or parameter
 if ( ! $conf.vmwHost ){
  $conf.vmwHost=$(get-vmhost  | Select-Object Name, @{n='FreeMem';e={$_.MemoryTotalGB - $_.MemoryUsageGB}} | sort FreeMem | select-object -last 1).Name
