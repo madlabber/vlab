@@ -154,7 +154,10 @@ http.createServer(
 
       var spawn = require("child_process").spawn,child;
       child = spawn("powershell.exe",[require.resolve("./new-vlab.ps1"),url.query]);
-      child.stdout.on("data",function(data){res.write("<br>"+data)});
+      child.stdout.on("data",function(data){
+        var strData = ''+data;
+        if (strData.trim() != '') {res.write(""+data+" <br>")}
+      });
       child.stderr.on("data",function(data){console.log(""+data)});
       child.on("exit",function(){
           console.log("Script finished");
@@ -167,7 +170,7 @@ http.createServer(
     else if (pathName === '/start') {
       res.writeHead(200, {'Content-Type': 'text/html'});
       res.write(''+navbar);
-      res.write('Stating instance...');
+      res.write('Starting instance...');
       res.write('<hr>');
 
       var spawn = require("child_process").spawn,child;

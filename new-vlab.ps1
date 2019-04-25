@@ -29,6 +29,7 @@ $conf=. "$ScriptDirectory\get-vlabsettings.ps1"
 $newID=100
 
 # Pick the host with the most free ram unless specified by config file or parameter
+Write-Host "Selecting VM Host."
 if ( ! $conf.vmwHost ){
  $conf.vmwHost=$(get-vmhost  | Select-Object Name, @{n='FreeMem';e={$_.MemoryTotalGB - $_.MemoryUsageGB}} | sort FreeMem | select-object -last 1).Name
 }
@@ -40,6 +41,7 @@ if ( ! $conf.VIDatastore ) { $conf.VIDatastore="$vApp" }
 if ( ! $VIDatastore ) { $VIDatastore=$conf.VIDatastore }
 
 # Find next vAppID
+Write-Host "Getting next vAppID."
 if ( ! $vAppNew ) {
 	do {
 		$newID++
@@ -53,21 +55,22 @@ if ( ! $vAppNew ) {
 Write-Host "Provisioning $vAppNew from $vApp on"$conf.vmwHost
 
 # FlexClone the vApp volume
-Write-Host "Creating Volume FlexClone /$VIDatastore/$vAppNew"
+Write-Host "..Creating Volume FlexClone /$VIDatastore/$vAppNew"
 $result=New-NcVolClone $vAppNew $vApp -JunctionPath "/$VIDatastore/$vAppNew" -ParentSnapshot master
 
 # Create New vApp
-write-host "Creating vApp $vappnew"
-$result=New-VApp -Name $vAppNew -Location (Get-Cluster $conf.VICluster)
+write-host "..Creating vApp $vappnew"
+$cloneApp=New-VApp -Name $vAppNew -Location (Get-Cluster $conf.VICluster)
+$srcApp=Get-vApp $vApp
 
 # Create New portgroups
 # Hosts have a portgroup limit of 500ish
-write-host "Creating portgroups"
+write-host "..Creating portgroups"
 $pgID=1
 [int]$pgVLan=$conf.vlanbase
 $virtualSwitches=get-cluster | ?{ $_.Name -eq $conf.VICluster } | get-vmhost | get-virtualswitch | ?{ $_.Name -eq $conf.vswitch}
 $portGroups=$virtualSwitches | get-virtualportgroup
-foreach($srcPortGroup in $(get-vapp $vApp | get-vm | get-virtualportgroup | where { $_.Name -like "$vApp*" })) {
+foreach($srcPortGroup in $( $srcApp | get-vm | get-virtualportgroup | where { $_.Name -like "$vApp*" })) {
 	#Find next unused VLAN
 	DO {
 		$pgVLan++
@@ -76,14 +79,14 @@ foreach($srcPortGroup in $(get-vapp $vApp | get-vm | get-virtualportgroup | wher
 
 	#PortGroups are sequential independant of VLAN ID
 	$pgName="$vAppNew"+"_$pgID"
+	Write-Host "....$pgName"
 	$result=$virtualSwitches | new-virtualportgroup -name $pgName -vlanid $pgVLan
 	$pgID++
 	$pgVLan++
 }
 
 # Register all the VMs into the vApp
-Write-Host "Registering VMs"
-#$ESXHost = Get-VMHost $conf.vmwHost
+Write-Host "..Registering VMs"
 
 # Searches for .VMX Files in datastore variable
 $ds = Get-Datastore -Name $VIDatastore | %{Get-View $_.Id}
@@ -107,24 +110,26 @@ foreach($VMXFolder in $SearchResult) {
 }
 
 #Connect nics to the new portgroups
-write-host "Connecting Nics"
+write-host "..Connecting Nics"
 $pgID=1
-$networkAdapters=get-vapp $vAppNew | get-vm | get-networkadapter
-foreach($srcPortGroup in $(get-vapp $vApp | get-vm | get-virtualportgroup | where { $_.Name -like "$vApp*" })) {
+$networkAdapters=$cloneApp | get-vm | get-networkadapter
+foreach($srcPortGroup in $($srcApp | get-vm | get-virtualportgroup | where { $_.Name -like "$vApp*" })) {
 	$pgName="$vAppNew"+"_$pgID"
 	$result=$networkAdapters | where {$_.NetworkName -eq $srcPortGroup } | set-networkadapter -NetworkName "$pgName" -confirm:$false
-	write-host "    $srcPortGroup => $pgName"
+	write-host "....$srcPortGroup => $pgName"
 	$pgID++
 }
+$result=get-vapp $vAppNew | get-vm | get-networkadapter | where { $_.NetworkName -notlike "$vAppNew*"} | set-networkadapter -NetworkName $conf.VIPortgroup -confirm:$false
+
 # Connect the WAN interface
 $oldWAN=$(get-vapp $vAppNew | get-vm | ?{ $_.Name -eq "gateway"} | get-networkadapter | ?{ $_.NetworkName -notlike "$vAppNew*" }).NetworkName
-$newWAN=Get-VirtualPortGroup -Name $conf.VIPortgroup
+#$newWAN=Get-VirtualPortGroup -Name $conf.VIPortgroup
 foreach($srcPortGroup in $(get-vapp $vApp | get-vm | get-virtualportgroup | where { $_.Name -eq $oldWAN })) {
 	$result=get-vapp $vAppNew | get-vm | get-networkadapter | where {$_.NetworkName -eq $srcPortGroup } | set-networkadapter -NetworkName $conf.VIPortgroup -confirm:$false
 }
 
 # Fixup any named pipe serial ports
-write-host "Configuring serial ports"
+write-host "..Configuring serial ports"
 $VMs=Get-vApp $vAppNew | get-vm
 Foreach ($VM in $VMs){
 	Foreach ($Device in ( $vm.ExtensionData.Config.Hardware.Device | where { $_.gettype().Name -eq "VirtualSerialPort" } )) {
@@ -150,11 +155,11 @@ Foreach ($VM in $VMs){
 }
 
 # Configure uuid.action = "keep"
-write-host "Setting uuid.action = keep"
+write-host "..Setting uuid.action = keep"
 $result=get-vapp $vAppNew | get-vm | New-AdvancedSetting -Name uuid.action -Value "keep" -Confirm:$false -Force:$true -WarningAction SilentlyContinue
 
 # Ack alarms on all those VMs
-write-host "Acknowledging alarms"
+write-host "..Acknowledging alarms"
 $alarmMgr = Get-View AlarmManager 
 $result=Get-vApp $vAppNew | Get-VM | where {$_.ExtensionData.TriggeredAlarmState} | %{
     $vm = $_
@@ -164,18 +169,12 @@ $result=Get-vApp $vAppNew | Get-VM | where {$_.ExtensionData.TriggeredAlarmState
 }
 
 # Create an affinity rule for the vApp
-write-host "Configuring Affinity"
+write-host "..Configuring Affinity"
 $result=New-DrsRule -Cluster $conf.VICluster -Name $vAppNew -KeepTogether $true -VM (get-vapp $vAppNew | get-vm)
 
-# Remove the stagin folder
-#$result=$viFolder | remove-folder
-
-# Then we want to start up the VMs
-# and do something like this to find the outside IP
-# Get-VM | where { $_.Name -eq "gateway" } |Select Name, @{N="IP Address";E={@($_.guest.IPAddress[0])}}
-
+# Start the vApp (optional)
 if ( $conf.autostart -eq "true" ){
-	write-host "starting $vAppNew"
+	write-host "Starting $vAppNew"
 	$result=get-vapp $vAppNew | get-vm | start-vm
 }
 

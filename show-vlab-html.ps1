@@ -65,10 +65,12 @@ if ( $wanip ){
 Write-Host "</table><br>"
 
 Write-Host "<table><tr><td valign=top width=40%>"
-Write-Host "<b>Virtual Machines:</b><br>"
+Write-Host "<b>Virtual Machines:</b><hr>"
 Write-Host "<table>"
 Write-Host "<tr><td><u>Name</u></td><td><u>PowerState</u></td><td><u>vCPUs</u></td><td><u>MemoryGB</u></td></tr>"
 $vms=get-vapp | where { $_.Name -eq "$CURRENTVLAB" } | get-vm | sort Name 
+$sumMemoryGB=0
+$sumCPUs=0
 foreach ($vm in $vms) {
     Write-Host "<tr>"
     Write-Host "<td width=120px>"$vm.Name"</td>"
@@ -76,13 +78,16 @@ foreach ($vm in $vms) {
     Write-Host "<td align=center> "$vm.NumCpu"</td>"
     Write-Host "<td> "$vm.MemoryGB"</td>"
     Write-Host "</tr>"
+    $sumMemoryGB+=$vm.MemoryGB
+    $sumCPUs+=$vm.NumCpu
 }
 
+Write-Host "<tr><td width=120px><b>Total:</b></td><td></td><td align=center><b>$sumCPUs</b></td><td><b>$sumMemoryGB</b></td></tr>"
 Write-Host "</table>"
 Write-Host "</td><td width=10px></td><td  valign=top>"
 $diagram="$parent`.jpg"
 if ( Test-Path "$ScriptDirectory\cmdb\$diagram" -PathType Leaf ){
-Write-Host "<b>Topology:</b><br>"
+Write-Host "<b>Topology:</b><hr>"
 Write-Host "<img src=cmdb/$diagram alt=lab_diagram width=500>"}
 Write-Host "</td></tr></table>"
 } -ArgumentList $CURRENTVLAB,$ScriptDirectory
