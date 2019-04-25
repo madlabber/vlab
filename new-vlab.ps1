@@ -85,9 +85,8 @@ foreach($srcPortGroup in $( $srcApp | get-vm | get-virtualportgroup | where { $_
 	$pgVLan++
 }
 
-# Register all the VMs into the vApp
-Write-Host "..Registering VMs"
 
+Write-Host "..Searching for VMs"
 # Searches for .VMX Files in datastore variable
 $ds = Get-Datastore -Name $VIDatastore | %{Get-View $_.Id}
 $SearchSpec = New-Object VMware.Vim.HostDatastoreBrowserSearchSpec
@@ -98,7 +97,9 @@ $DatastorePath = "[" + $ds.Summary.Name + "]/$vAppNew"
  
 # Find all .VMX file paths in Datastore variable and filters out .snapshot
 $SearchResult = $dsBrowser.SearchDatastoreSubFolders($DatastorePath, $SearchSpec) | where {$_.FolderPath -notmatch ".snapshot"}
- 
+
+# Register all the VMs into the vApp
+Write-Host "..Registering VMs"
 # Register all .VMX files with vCenter
 foreach($VMXFolder in $SearchResult) {
 	foreach($VMXFile in $VMXFolder.File) {
@@ -139,7 +140,7 @@ Foreach ($VM in $VMs){
 				#$newPipeName=$pipeName+"_"+$newID	
 				#write-host "Serial"$Device.UnitNumber" : $pipeName => $newPipeName"	
 				$newPipeName=$vAppNew+$pipeName.substring($vApp.length)	
-				write-host $VM.Name	": Serial"$Device.UnitNumber" : $pipeName => $newPipeName"					
+				write-host "$VM`:serial$($Device.UnitNumber)`:: $pipeName => $newPipeName"					
 				
 				#Now.. hackery begins
 				$cfgSpec=New-Object VMware.Vim.VirtualMachineConfigSpec
