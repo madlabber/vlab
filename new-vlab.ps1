@@ -140,7 +140,7 @@ Foreach ($VM in $VMs){
 				#$newPipeName=$pipeName+"_"+$newID	
 				#write-host "Serial"$Device.UnitNumber" : $pipeName => $newPipeName"	
 				$newPipeName=$vAppNew+$pipeName.substring($vApp.length)	
-				write-host "$VM`:serial$($Device.UnitNumber)`:: $pipeName => $newPipeName"					
+				write-host "....$VM`:serial$($Device.UnitNumber)`:: $pipeName => $newPipeName"					
 				
 				#Now.. hackery begins
 				$cfgSpec=New-Object VMware.Vim.VirtualMachineConfigSpec
