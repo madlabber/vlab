@@ -19,7 +19,7 @@ http.createServer(
     var url = require('url').parse(req.url)
     let pathName = url.pathname
 
-    var navbar = '<center><table><tr><td><center><b><font size=5>Homelab-On-Demand</font></b></center></td></tr><tr><td><center><a href="/">Home</a> | <a href="/catalog">Catalog</a> | <a href="/instances">Instances</a> | <a href="/admin">Admin</a></center></td></tr></table></center><hr>';
+    var navbar = '<center><table><tr><td><center><b><font size=5>Homelab On Demand</font></b></center></td></tr><tr><td><center><a href="/">Home</a> | <a href="/catalog">Catalog</a> | <a href="/instances">Instances</a> | <a href="/admin">Admin</a></center></td></tr></table></center><hr>';
 
     res.on('error', function(data){console.log(""+data)});
 
