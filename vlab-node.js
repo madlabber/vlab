@@ -26,14 +26,20 @@ http.createServer(
     console.log(''+req.url);
     // Main 
     if (pathName === '/') { 
+      var psscript = require.resolve("./show-dashboard-html.ps1");   
+         
       res.writeHead(200, {'Content-Type': 'text/html'});
       res.write(''+navbar);
-      res.write('<b>Lab Home</b><hr><br>');
-      res.write('<a href="/catalog">Lab Catalog</a><br>');
-      res.write('<a href="/instances">Lab Instances</a><br>');
-      res.write('<a href="/admin">Lab Administration</a><br>');
-      res.end('<br><hr>:<hr>');  
-    } 
+      res.write('<b>Lab Dashboard:</b><hr>');
+
+      console.log("spawning "+psscript);
+      var spawn = require("child_process").spawn,child;
+      child = spawn("powershell.exe",[psscript],{ cwd: process.cwd(), detached: false });
+      child.stdout.on("data",function(data){res.write(""+data)});
+      child.stderr.on("data",function(data){console.log(""+data)});
+      child.on("exit",function(){ res.end('<br><hr>:<hr>') });
+      child.stdin.end();
+    }
     // Catalog
     else if (pathName === '/catalog') { 
       var psscript = require.resolve("./show-vlabcatalog-html.ps1");   
