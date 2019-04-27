@@ -14,16 +14,18 @@ $ScriptDirectory = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
 $conf=. "$ScriptDirectory\get-vlabsettings.ps1"
 
 #region Import modules
-	# NetApp Powershell Toolkit
-	$ncModule=get-module | where { $_.Name -eq "DataONTAP" }
-	if ( !$ncModule ) { 
-		import-module DataONTAP 
-	}
+  # NetApp Powershell Toolkit
+  $ncModule=get-module | where { $_.Name -eq "DataONTAP" }
+  if ( !$ncModule ) { 
+    import-module DataONTAP 
+  }
 	
-	# VMware PowerCLI Snap-in
+  # VMware PowerCLI Snap-in
+  if ( ! $defaultVIServer ){
 	if ( (Get-PSSnapin -Name VMware.VimAutomation.Core -ErrorAction SilentlyContinue) -eq $null ){
 		Add-PSSnapin VMware.VimAutomation.Core
 	}
+  }
 #endregion
 
 #region Establish connections	

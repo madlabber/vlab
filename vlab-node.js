@@ -36,51 +36,51 @@ http.createServer(
     } 
     // Catalog
     else if (pathName === '/catalog') { 
+      var psscript = require.resolve("./show-vlabcatalog-html.ps1");   
+         
       res.writeHead(200, {'Content-Type': 'text/html'});
       res.write(''+navbar);
       res.write('<b>Lab Catalog:</b><hr>');
 
+      console.log("spawning "+psscript);
       var spawn = require("child_process").spawn,child;
-      child = spawn("powershell.exe",[require.resolve("./show-vlabcatalog-html.ps1")]);
+      child = spawn("powershell.exe",[psscript],{ cwd: process.cwd(), detached: false });
       child.stdout.on("data",function(data){res.write(""+data)});
       child.stderr.on("data",function(data){console.log(""+data)});
-      child.on("exit",function(){
-          console.log("Script finished");
-          res.end('<br><hr>:<hr>');
-      });
+      child.on("exit",function(){ res.end('<br><hr>:<hr>') });
       child.stdin.end();
     }
     // Instances
     else if (pathName === '/instances') { 
+      var psscript = require.resolve("./show-vlabs-html.ps1");   
+         
       res.writeHead(200, {'Content-Type': 'text/html'});
       res.write(''+navbar);
       res.write('<b>Lab Instances:</b><hr>');
 
+      console.log("spawning "+psscript);
       var spawn = require("child_process").spawn,child;
-      child = spawn("powershell.exe",[require.resolve("./show-vlabs-html.ps1")]);
+      child = spawn("powershell.exe",[psscript],{ cwd: process.cwd(), detached: false });
       child.stdout.on("data",function(data){res.write(""+data)});
       child.stderr.on("data",function(data){console.log(""+data)});
-      child.on("exit",function(){
-          console.log("Script finished");
-          res.end('<br><hr>:<hr>');
-      });
+      child.on("exit",function(){ res.end('<br><hr>:<hr>') });
       child.stdin.end();
     } 
     // Admin Menu
     else if (pathName === '/admin') {
+      var psscript = require.resolve("./show-adminmenu-html.ps1"); 
+
       res.writeHead(200, {'Content-Type': 'text/html'});
       res.write(''+navbar);
       res.write('<b>Lab Administration:</b><hr><br>');
 
+      console.log("spawning "+psscript);
       var spawn = require("child_process").spawn,child;
-      child = spawn("powershell.exe",[require.resolve("./show-adminmenu-html.ps1"),url.query]);
+      child = spawn("powershell.exe",[psscript],{ cwd: process.cwd(), detached: false });
       child.stdout.on("data",function(data){res.write(""+data)});
       child.stderr.on("data",function(data){console.log(""+data)});
-      child.on("exit",function(){
-          console.log("Script finished");
-          res.end('<br><hr>:<hr>');
-      });
-      child.stdin.end();  
+      child.on("exit",function(){ res.end('<br><hr>:<hr>') });
+      child.stdin.end();
     }
     // Item Detail
     else if (pathName === '/item') {
@@ -89,7 +89,7 @@ http.createServer(
       res.write('<b>Lab Details:</b><hr>');
 
       var spawn = require("child_process").spawn,child;
-      child = spawn("powershell.exe",[require.resolve("./show-vlab-html.ps1"),url.query]);
+      child = spawn("powershell.exe",[require.resolve("./show-vlab-html.ps1"),url.query],{ cwd: process.cwd(), detached: false });
       child.stdout.on("data",function(data){res.write(""+data)});
       child.stderr.on("data",function(data){console.log(""+data)});
       child.on("exit",function(){
@@ -109,7 +109,7 @@ http.createServer(
       res.write('<b>Lab Instance:</b><hr>');
 
       var spawn = require("child_process").spawn,child;
-      child = spawn("powershell.exe",[require.resolve("./show-vlab-html.ps1"),url.query]);
+      child = spawn("powershell.exe",[require.resolve("./show-vlab-html.ps1"),url.query],{ cwd: process.cwd(), detached: false });
       child.stdout.on("data",function(data){res.write(""+data)});
       child.stderr.on("data",function(data){console.log(""+data)});
       child.on("exit",function(){
@@ -133,7 +133,7 @@ http.createServer(
       res.write('<b>Configuration Settings</b><hr>');
 
       var spawn = require("child_process").spawn,child;
-      child = spawn("powershell.exe",[require.resolve("./show-vlabsettings-html.ps1"),url.query]);
+      child = spawn("powershell.exe",[require.resolve("./show-vlabsettings-html.ps1"),url.query],{ cwd: process.cwd(), detached: false });
       child.stdout.on("data",function(data){res.write(""+data)});
       child.stderr.on("data",function(data){console.log(""+data)});
       child.on("exit",function(){
@@ -149,7 +149,7 @@ http.createServer(
       res.write('<b>Lab Provisioning...</b><hr>');
 
       var spawn = require("child_process").spawn,child;
-      child = spawn("powershell.exe",[require.resolve("./new-vlab.ps1"),url.query]);
+      child = spawn("powershell.exe",[require.resolve("./new-vlab.ps1"),url.query],{ cwd: process.cwd(), detached: false });
       child.stdout.on("data",function(data){
         var strData = ''+data;
         if (strData.trim() != '') {res.write(""+data+" <br>")}
@@ -170,7 +170,7 @@ http.createServer(
       res.write('<hr>');
 
       var spawn = require("child_process").spawn,child;
-      child = spawn("powershell.exe",[require.resolve("./start-vlab.ps1"),url.query]);
+      child = spawn("powershell.exe",[require.resolve("./start-vlab.ps1"),url.query],{ cwd: process.cwd(), detached: false });
       child.stdout.on("data",function(data){
         var strData = ''+data;
         if (strData.trim() != '') {res.write(""+data+" <br>")}
@@ -191,7 +191,7 @@ http.createServer(
       res.write('<hr>');
 
       var spawn = require("child_process").spawn,child;
-      child = spawn("powershell.exe",[require.resolve("./stop-vlab.ps1"),url.query]);
+      child = spawn("powershell.exe",[require.resolve("./stop-vlab.ps1"),url.query],{ cwd: process.cwd(), detached: false });
       child.stdout.on("data",function(data){
         var strData = ''+data;
         if (strData.trim() != '') {res.write(""+data+" <br>")}
@@ -233,7 +233,7 @@ http.createServer(
       res.write('<hr>');
 
       var spawn = require("child_process").spawn,child;
-      child = spawn("powershell.exe",[require.resolve("./remove-vlab.ps1"),url.query]);
+      child = spawn("powershell.exe",[require.resolve("./remove-vlab.ps1"),url.query],{ cwd: process.cwd(), detached: false });
       child.stdout.on("data",function(data){
         var strData = ''+data;
         if (strData.trim() != '') {res.write(""+data+" <br>")}
@@ -274,6 +274,21 @@ http.createServer(
     }
   }
 ).listen(8080);
+
+// timer based restart to use the latest version
+console.log("This is pid " + process.pid);
+//console.log("process.argv.shift:"+process.argv.shift());
+console.log("process.cwd:"+process.cwd());
+console.log("process.argv:"+process.argv);
+// setTimeout(function () {
+//     process.on("exit", function () {
+//         require("child_process").spawn(process.argv.shift(), process.argv, {
+//             cwd: process.cwd(),
+//             detached : true,
+//         });
+//     });
+//     process.exit();
+// }, 60000);
 
 
  //end input

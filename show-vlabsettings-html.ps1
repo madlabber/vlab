@@ -12,3 +12,9 @@ foreach ( $key in $settings.keys ){
     Write-Host "</tr>"
 }
 Write-Host "</table>"
+
+$TotalVMs=(get-vm).count
+
+
+#This keeps the powershell process from ending before all of the output has reached the node.js front end.
+start-sleep -Milliseconds 100

@@ -27,7 +27,7 @@ $conf=. "$ScriptDirectory\get-vlabsettings.ps1"
 & "$ScriptDirectory\Connect-vLabResources.ps1"
 
 # Settings
-$newID=$conf.newID
+[int]$newID=$conf.newID
 
 # Pick the host with the most free ram unless specified by config file or parameter
 if ( ! $conf.vmwHost ){

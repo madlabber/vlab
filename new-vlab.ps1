@@ -27,7 +27,7 @@ $conf=. "$ScriptDirectory\get-vlabsettings.ps1"
 & "$ScriptDirectory\Connect-vLabResources.ps1"
 
 # Settings
-$newID=$conf.newID
+[int]$newID=$conf.newID
 
 # Pick the host with the most free ram unless specified by config file or parameter
 Write-Host "Selecting VM Host."
@@ -94,7 +94,6 @@ $SearchSpec = New-Object VMware.Vim.HostDatastoreBrowserSearchSpec
 $SearchSpec.matchpattern = "*.vmx"
 $dsBrowser = Get-View $ds.browser
 $DatastorePath = "[" + $ds.Summary.Name + "]/$vAppNew"
-#$ClonePath = "[" + $ds.Summary.Name + "] /$vAppNew"
  
 # Find all .VMX file paths in Datastore variable and filters out .snapshot
 $SearchResult = $dsBrowser.SearchDatastoreSubFolders($DatastorePath, $SearchSpec) | where {$_.FolderPath -notmatch ".snapshot"}
@@ -122,14 +121,14 @@ foreach($srcPortGroup in $($srcApp | get-vm | get-virtualportgroup | where { $_.
 	$result=$networkAdapters | where {$_.NetworkName -eq $srcPortGroup } | set-networkadapter -NetworkName "$pgName" -confirm:$false
 	$pgID++
 }
-$result=get-vapp $vAppNew | get-vm | get-networkadapter | where { $_.NetworkName -notlike "$vAppNew*"} | set-networkadapter -NetworkName $conf.VIPortgroup -confirm:$false
+$result=$networkAdapters | where { $_.NetworkName -notlike "$vAppNew*"} | set-networkadapter -NetworkName $conf.VIPortgroup -confirm:$false
 
 # Connect the WAN interface
-$oldWAN=$(get-vapp $vAppNew | get-vm | ?{ $_.Name -eq "gateway"} | get-networkadapter | ?{ $_.NetworkName -notlike "$vAppNew*" }).NetworkName
+#$oldWAN=$(get-vapp $vAppNew | get-vm | ?{ $_.Name -eq "gateway"} | get-networkadapter | ?{ $_.NetworkName -notlike "$vAppNew*" }).NetworkName
 #$newWAN=Get-VirtualPortGroup -Name $conf.VIPortgroup
-foreach($srcPortGroup in $(get-vapp $vApp | get-vm | get-virtualportgroup | where { $_.Name -eq $oldWAN })) {
-	$result=get-vapp $vAppNew | get-vm | get-networkadapter | where {$_.NetworkName -eq $srcPortGroup } | set-networkadapter -NetworkName $conf.VIPortgroup -confirm:$false
-}
+#foreach($srcPortGroup in $(get-vapp $vApp | get-vm | get-virtualportgroup | where { $_.Name -eq $oldWAN })) {
+#	$result=get-vapp $vAppNew | get-vm | get-networkadapter | where {$_.NetworkName -eq $srcPortGroup } | set-networkadapter -NetworkName $conf.VIPortgroup -confirm:$false
+#}
 
 # Fixup any named pipe serial ports
 write-host "..Configuring serial ports"
