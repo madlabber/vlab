@@ -30,7 +30,7 @@ http.createServer(
          
       res.writeHead(200, {'Content-Type': 'text/html'});
       res.write(''+navbar);
-      res.write('<b>Lab Dashboard:</b><hr>');
+      res.write('<b>:</b><hr>');
 
       console.log("spawning "+psscript);
       var spawn = require("child_process").spawn,child;

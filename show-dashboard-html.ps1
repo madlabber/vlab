@@ -12,32 +12,70 @@
 $ScriptDirectory = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
 $session=.\get-vlabsession.ps1
 $result=invoke-command -session $session -scriptblock { 
+    param($ScriptDirectory)
+
     $conf=. "$ScriptDirectory\get-vlabsettings.ps1"
-
-    #write-host "<a href=/config>Configuration Settings</a>"
-    #write-host "<br><br><a href=https://$defaultVIServer` target=_blank>VMware vCenter</a>"
-    #write-host "<br><br><a href=https://$CurrentNcController` target=_blank>OnCommand System Manager</a>"
-    #write-host "<br>"
-
+    
+    $labs=get-ncvol | where { $_.Name -like "lab_*" } | where { ! $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name }
+    $instances=get-ncvol | where { $_.Name -like "lab_*" } | where { $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name }
+    $running=get-vapp | where { $_.Name -like "lab_*" } | where {$_.Status -eq "Started"}
     $VMHosts=get-cluster $conf.VICluster | get-vmhost
     $CpuUsageMhz=($VMHosts | measure-object -property CpuUsageMhz -sum).sum
     $CpuTotalMhz=($VMHosts | measure-object -property CpuTotalMhz -sum).sum
     $MemoryUsageGB=($VMHosts | measure-object -property MemoryUsageGB -sum).sum
     $MemoryTotalGB=($VMHosts | measure-object -property MemoryTotalGB -sum).sum
     $NCAggrs=$(foreach ($aggr in $((get-ncvol | where  {$_.Name -like "lab_*"}).aggregate | sort-object | get-unique)){get-ncaggr $aggr})
-    Write-Host "</center><table><tr><td align=center>Hosts</td><td> </td><td align=center>CPU</td><td> </td><td align=center>Memory</td><td> </td><td width=25% align=center>Storage</td></tr>"
-    Write-Host "<tr>"
-    Write-Host "<td align=center><h1> "$VMHosts.count" <h1></td><td width=25px> </td>"
-    Write-Host "<td align=center><h1> "$($CpuUsageMhz/$CpuTotalMhz).tostring('p0').Replace(' ','')" </h1></td><td width=25px> </td>"
-    Write-Host "<td align=center><h1> "$($MemoryUsageGB/$MemoryTotalGB).tostring('p0').Replace(' ','')" </h1></td><td width=25px> </td>"
-    Write-Host "<td align=center> -- </td>" 
-    Write-Host "<tr><td align=center></td><td></td>"
-    Write-Host "<td align=center><h6> "$CpuUsageMhz" / "$CpuTotalMhz" Mhz </h6></td><td> </td>"
-    Write-Host "<td align=center><h6> "$MemoryUsageGB.tostring("n2")" /"$MemoryTotalGB.tostring("n2")"GB </h6></td><td width=25px> </td>"
-    Write-Host "<td align=center> -- </td>" 
-    Write-Host "</tr></table></center>"
+    $TotalDisk=($NCAggrs | measure-object -property TotalSize -sum).sum / 1GB
+    $AvailableDisk=($NCAggrs | measure-object -property Available -sum).sum / 1GB
+    Write-Host "<center><table>"
+    Write-Host   "<tr><td><b><h3><center>Labs</center></h3></b></td><td></td><td><b><h3><center>Resources</center></h3></b></td></tr>"
+    Write-Host   "<tr>"
+    Write-Host      "<td>"
+    Write-Host        "<table>"
+    Write-Host          "<tr>"
+    Write-Host            "<td>Available</td>   <td width=25px></td>"
+    Write-Host            "<td>Provisioned</td> <td width=25px></td>"
+    Write-host            "<td>Running</td>     <td width=25px></td>"
+    Write-Host          "</tr><tr>"
+    Write-Host            "<td align=center><h1>$($labs.count)</h1></td>      <td width=25px></td>"
+    Write-Host            "<td align=center><h1>$($instances.count)</h1></td> <td width=25px></td>"
+    Write-Host            "<td align=center><h1>$($running.count)</h1></td>   <td width=25px></td>"
+    Write-Host          "</tr><tr>"
+    Write-Host            "<td><h6>:</h6></td><td width=25px></td>"
+    Write-Host            "<td></td><td width=25px></td>"
+    Write-host            "<td></td><td width=25px></td>"
+    Write-Host          "</tr>"
+    Write-Host        "</table>"
+    Write-Host      "</td>"
+    Write-Host      "<td width=50px>"
+    Write-Host      "</td>"
+    Write-Host      "<td>"
+    Write-Host        "<table>"
+    Write-Host          "<tr>"
+    Write-Host            "<td align=center>Hosts</td><td width=25px></td>"
+    Write-Host            "<td align=center>CPU</td><td width=25px></td>"
+    Write-Host            "<td align=center>Memory</td><td width=25px></td>"
+    Write-host            "<td align=center>Storage</td><td width=25px></td></tr>"
+    Write-Host          "<tr>"
+    Write-Host            "<td align=center><h1>"$($VMHosts.count)"</h1></td><td width=25px></td>"
+    Write-Host            "<td align=center><h1>"$($CpuUsageMhz/$CpuTotalMhz).tostring('p0').Replace(' ','')"</h1></td><td width=25px></td>"
+    Write-Host            "<td align=center><h1>"$($MemoryUsageGB/$MemoryTotalGB).tostring('p0').Replace(' ','')"</h1></td><td width=25px></td>"
+    Write-Host            "<td align=center><h1>"$(($TotalDisk-$AvailableDisk)/$TotalDisk).tostring('p0').Replace(' ','')"</h1></td><td width=25px></td>"
+    Write-Host          "</tr>"
+    Write-Host          "<tr>"
+    Write-Host            "<td> </td><td width=25px></td>"
+    Write-Host            "<td><h6> "$CpuUsageMhz" / "$CpuTotalMhz" Mhz </h6></td><td width=25px></td>"
+    Write-Host            "<td><h6> "$MemoryUsageGB.tostring("n2")" / "$MemoryTotalGB.tostring("n2")"GB </h6></td><td width=25px></td>"
+    Write-host            "<td><h6> "$($TotalDisk-$AvailableDisk).tostring('n2')" / "$TotalDisk.tostring('n2')" GB </h6></td><td width=25px></td></tr>"
+    Write-Host        "</table>"
+    Write-Host      "</td>"
+    Write-Host   "</tr>"
+    Write-Host "</table></center>"
+
     # foreach ($aggr in $((get-ncvol | where  {$_.Name -like "lab_*"}).aggregate | sort-object | get-unique)){get-ncaggr $aggr}
     # (foreach ($aggr in $((get-ncvol | where  {$_.Name -like "lab_*"}).aggregate | sort-object | get-unique)){get-ncaggr $aggr}).TotalSize
+
+
 } -ArgumentList $ScriptDirectory
 
 $result=disconnect-pssession -Name "node-vlab" -IdleTimeoutSec 3600 -WarningAction silentlyContinue
