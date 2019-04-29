@@ -4,286 +4,304 @@ const port = 8080
 
 var fs = require('fs');
 var path = require('path');
+var navbar = '<center><table><tr><td><center><b><font size=5>Homelab On Demand</font></b></center></td></tr><tr><td><center><a href="/">Home</a> | <a href="/catalog">Catalog</a> | <a href="/instances">Instances</a> | <a href="/admin">Admin</a></center></td></tr></table></center><hr>';
 
+app.get('/', (
+  function (req, res) { 
+    console.log(''+req.url);  
+    var psscript = require.resolve("./show-dashboard-html.ps1"); 
+    var pgtitle = "";
+    //res.on('error', function(data){console.log(""+data)});
 
-var mimeTypes = {
-  "html": "text/html",
-  "mp3":"audio/mpeg",
-  "mp4":"video/mp4",
-  "jpeg": "image/jpeg",
-  "jpg": "image/jpeg",
-  "png": "image/png",
-  "js": "text/javascript",
-  "css": "text/css",
-  "ico": "image/x-icon"};
+    res.writeHead(200, {'Content-Type': 'text/html'});
+    res.write(''+navbar);
+    res.write('<b>'+pgtitle+':</b><hr><br>');
 
-app.get('/*', ( 
-  function (req, res) {
+    console.log("spawning "+psscript);
+    var spawn = require("child_process").spawn,child;
+    child = spawn("powershell.exe",[psscript],{ cwd: process.cwd(), detached: false });
+    child.stdout.on("data",function(data){res.write(""+data)});
+    child.stderr.on("data",function(data){console.log(""+data)});
+    child.on("exit",function(){ res.end('<br><hr>:<hr>') });
+    child.stdin.end();
+}));
 
+app.get('/catalog', (
+  function (req,res){
+    console.log(''+req.url);
+    var psscript = require.resolve("./show-vlabcatalog-html.ps1");   
+    var pgtitle = "Lab Catalog";      
+
+    res.writeHead(200, {'Content-Type': 'text/html'});
+    res.write(''+navbar);
+    res.write('<b>'+pgtitle+':</b><hr><br>');
+
+    console.log("spawning "+psscript);
+    var spawn = require("child_process").spawn,child;
+    child = spawn("powershell.exe",[psscript],{ cwd: process.cwd(), detached: false });
+    child.stdout.on("data",function(data){res.write(""+data)});
+    child.stderr.on("data",function(data){console.log(""+data)});
+    child.on("exit",function(){ res.end('<br><hr>:<hr>') });
+    child.stdin.end();
+}));
+
+app.get('/instances', (
+  function (req,res){
+    var psscript = require.resolve("./show-vlabs-html.ps1");   
+    var pgtitle = "Lab Instances";      
+
+    console.log(''+req.url);    
     var url = require('url').parse(req.url)
     let pathName = url.pathname
+    
+    res.writeHead(200, {'Content-Type': 'text/html'});
+    res.write(''+navbar);
+    res.write('<b>'+pgtitle+':</b><hr><br>');
 
-    var navbar = '<center><table><tr><td><center><b><font size=5>Homelab On Demand</font></b></center></td></tr><tr><td><center><a href="/">Home</a> | <a href="/catalog">Catalog</a> | <a href="/instances">Instances</a> | <a href="/admin">Admin</a></center></td></tr></table></center><hr>';
+    console.log("spawning "+psscript);
+    var spawn = require("child_process").spawn,child;
+    child = spawn("powershell.exe",[psscript],{ cwd: process.cwd(), detached: false });
+    child.stdout.on("data",function(data){res.write(""+data)});
+    child.stderr.on("data",function(data){console.log(""+data)});
+    child.on("exit",function(){ res.end('<br><hr>:<hr>') });
+    child.stdin.end();
+}));
 
+app.get('/admin', (
+  function (req, res) { 
+    console.log(''+req.url);  
+    var psscript = require.resolve("./show-adminmenu-html.ps1"); 
+    var pgtitle = "Lab Administration";
     res.on('error', function(data){console.log(""+data)});
 
-    console.log(''+req.url);
-    // Main 
-    if (pathName === '/') { 
-      var psscript = require.resolve("./show-dashboard-html.ps1");   
-         
-      res.writeHead(200, {'Content-Type': 'text/html'});
-      res.write(''+navbar);
-      res.write('<b>:</b><hr>');
+    res.writeHead(200, {'Content-Type': 'text/html'});
+    res.write(''+navbar);
+    res.write('<b>'+pgtitle+':</b><hr><br>');
 
-      console.log("spawning "+psscript);
-      var spawn = require("child_process").spawn,child;
-      child = spawn("powershell.exe",[psscript],{ cwd: process.cwd(), detached: false });
-      child.stdout.on("data",function(data){res.write(""+data)});
-      child.stderr.on("data",function(data){console.log(""+data)});
-      child.on("exit",function(){ res.end('<br><hr>:<hr>') });
-      child.stdin.end();
-    }
-    // Catalog
-    else if (pathName === '/catalog') { 
-      var psscript = require.resolve("./show-vlabcatalog-html.ps1");   
-         
-      res.writeHead(200, {'Content-Type': 'text/html'});
-      res.write(''+navbar);
-      res.write('<b>Lab Catalog:</b><hr>');
+    console.log("spawning "+psscript);
+    var spawn = require("child_process").spawn,child;
+    child = spawn("powershell.exe",[psscript],{ cwd: process.cwd(), detached: false });
+    child.stdout.on("data",function(data){res.write(""+data)});
+    child.stderr.on("data",function(data){console.log(""+data)});
+    child.on("exit",function(){ res.end('<br><hr>:<hr>') });
+    child.stdin.end();
+}));
 
-      console.log("spawning "+psscript);
-      var spawn = require("child_process").spawn,child;
-      child = spawn("powershell.exe",[psscript],{ cwd: process.cwd(), detached: false });
-      child.stdout.on("data",function(data){res.write(""+data)});
-      child.stderr.on("data",function(data){console.log(""+data)});
-      child.on("exit",function(){ res.end('<br><hr>:<hr>') });
-      child.stdin.end();
-    }
-    // Instances
-    else if (pathName === '/instances') { 
-      var psscript = require.resolve("./show-vlabs-html.ps1");   
-         
-      res.writeHead(200, {'Content-Type': 'text/html'});
-      res.write(''+navbar);
-      res.write('<b>Lab Instances:</b><hr>');
+app.get('/item', (
+  function (req, res) { 
+    console.log(''+req.url);  
+    var psscript = require.resolve("./show-vlab-html.ps1"); 
+    var pgtitle = "Lab Details";
+    var url = require('url').parse(req.url)
+    res.on('error', function(data){console.log(""+data)});
 
-      console.log("spawning "+psscript);
-      var spawn = require("child_process").spawn,child;
-      child = spawn("powershell.exe",[psscript],{ cwd: process.cwd(), detached: false });
-      child.stdout.on("data",function(data){res.write(""+data)});
-      child.stderr.on("data",function(data){console.log(""+data)});
-      child.on("exit",function(){ res.end('<br><hr>:<hr>') });
-      child.stdin.end();
-    } 
-    // Admin Menu
-    else if (pathName === '/admin') {
-      var psscript = require.resolve("./show-adminmenu-html.ps1"); 
+    res.writeHead(200, {'Content-Type': 'text/html'});
+    res.write(''+navbar);
+    res.write('<b>'+pgtitle+':</b><hr><br>');
 
-      res.writeHead(200, {'Content-Type': 'text/html'});
-      res.write(''+navbar);
-      res.write('<b>Lab Administration:</b><hr><br>');
-
-      console.log("spawning "+psscript);
-      var spawn = require("child_process").spawn,child;
-      child = spawn("powershell.exe",[psscript],{ cwd: process.cwd(), detached: false });
-      child.stdout.on("data",function(data){res.write(""+data)});
-      child.stderr.on("data",function(data){console.log(""+data)});
-      child.on("exit",function(){ res.end('<br><hr>:<hr>') });
-      child.stdin.end();
-    }
-    // Item Detail
-    else if (pathName === '/item') {
-      res.writeHead(200, {'Content-Type': 'text/html'});
-      res.write(''+navbar);
-      res.write('<b>Lab Details:</b><hr>');
-
-      var spawn = require("child_process").spawn,child;
-      child = spawn("powershell.exe",[require.resolve("./show-vlab-html.ps1"),url.query],{ cwd: process.cwd(), detached: false });
-      child.stdout.on("data",function(data){res.write(""+data)});
-      child.stderr.on("data",function(data){console.log(""+data)});
-      child.on("exit",function(){
-          console.log("Script finished");
-          res.write('<hr>');
-          res.write('<form method="post" action="/provision?'+url.query+'">');
-          res.write('<button type="submit">Provision</button><hr>');
-          res.write('</form>');
-          res.end(' ');
-      });
-      child.stdin.end();     
-    } 
-    // Instance Detail
-    else if (pathName === '/instance') {
-      res.writeHead(200, {'Content-Type': 'text/html'});
-      res.write(''+navbar);
-      res.write('<b>Lab Instance:</b><hr>');
-
-      var spawn = require("child_process").spawn,child;
-      child = spawn("powershell.exe",[require.resolve("./show-vlab-html.ps1"),url.query],{ cwd: process.cwd(), detached: false });
-      child.stdout.on("data",function(data){res.write(""+data)});
-      child.stderr.on("data",function(data){console.log(""+data)});
-      child.on("exit",function(){
-          console.log("Script finished");
-          res.write('<hr>');
-          res.write('<form method="post" action="/start?'+url.query+'">');
-          res.write('<button type="submit">Start</button> ');
-          res.write('<button type="submit" formaction="/stop?'+url.query+'">Stop</button> ');          
-          res.write('<button type="submit" formaction="/kill?'+url.query+'">Kill</button> ');  
-          res.write('<button type="submit" formaction="/destroy?'+url.query+'">Destroy</button> '); 
-          res.write('<hr>');
-          res.write('</form>');
-          res.end(' ');
-      });
-      child.stdin.end();       
-    } 
-    // Admin Settings
-    else if (pathName === '/config') {
-      res.writeHead(200, {'Content-Type': 'text/html'});
-      res.write(''+navbar);
-      res.write('<b>Configuration Settings</b><hr>');
-
-      var spawn = require("child_process").spawn,child;
-      child = spawn("powershell.exe",[require.resolve("./show-vlabsettings-html.ps1"),url.query],{ cwd: process.cwd(), detached: false });
-      child.stdout.on("data",function(data){res.write(""+data)});
-      child.stderr.on("data",function(data){console.log(""+data)});
-      child.on("exit",function(){
-          console.log("Script finished");
-          res.end('<br><hr>:<hr>');
-      });
-      child.stdin.end();     
-    } 
-    // Provision
-    else if (pathName === '/provision') {
-      res.writeHead(200, {'Content-Type': 'text/html'});
-      res.write(''+navbar);
-      res.write('<b>Lab Provisioning...</b><hr>');
-
-      var spawn = require("child_process").spawn,child;
-      child = spawn("powershell.exe",[require.resolve("./new-vlab.ps1"),url.query],{ cwd: process.cwd(), detached: false });
-      child.stdout.on("data",function(data){
-        var strData = ''+data;
-        if (strData.trim() != '') {res.write(""+data+" <br>")}
-      });
-      child.stderr.on("data",function(data){console.log(""+data)});
-      child.on("exit",function(){
-          console.log("Script finished");
-          res.write('<script type="text/javascript">javascript:window.location.href(history.go(-1));</script>');
-          res.end('Done.');
-      });
-      child.stdin.end();     
-    } 
-    // start
-    else if (pathName === '/start') {
-      res.writeHead(200, {'Content-Type': 'text/html'});
-      res.write(''+navbar);
-      res.write('Starting instance...');
+    var spawn = require("child_process").spawn,child;
+    child = spawn("powershell.exe",[psscript,url.query],{ cwd: process.cwd(), detached: false });
+    child.stdout.on("data",function(data){res.write(""+data)});
+    child.stderr.on("data",function(data){console.log(""+data)});
+    child.on("exit",function(){
+      console.log("Script finished");
       res.write('<hr>');
+      res.write('<form method="post" action="/provision?'+url.query+'">');
+      res.write('<button type="submit">Provision</button><hr>');
+      res.write('</form>');
+      res.end(' ');
+    });
+    child.stdin.end();     
+}));
 
-      var spawn = require("child_process").spawn,child;
-      child = spawn("powershell.exe",[require.resolve("./start-vlab.ps1"),url.query],{ cwd: process.cwd(), detached: false });
-      child.stdout.on("data",function(data){
-        var strData = ''+data;
-        if (strData.trim() != '') {res.write(""+data+" <br>")}
-      });
-      child.stderr.on("data",function(data){console.log(""+data)});
-      child.on("exit",function(){
-          console.log("Script finished");
-          res.write('<script type="text/javascript">window.location = "/instance?'+url.query+'";</script>');
-          res.end('Done.');
-      });
-      child.stdin.end();     
-    } 
-    // stop
-    else if (pathName === '/stop') {
-      res.writeHead(200, {'Content-Type': 'text/html'});
-      res.write(''+navbar);
-      res.write('Stopping instance...');
+app.get('/instance', (
+  function (req, res) { 
+    console.log(''+req.url);  
+    var psscript = require.resolve("./show-vlab-html.ps1"); 
+    var pgtitle = "Lab Instance";
+    var url = require('url').parse(req.url)
+    res.on('error', function(data){console.log(""+data)});
+
+    res.writeHead(200, {'Content-Type': 'text/html'});
+    res.write(''+navbar);
+    res.write('<b>'+pgtitle+':</b><hr><br>');
+
+    var spawn = require("child_process").spawn,child;
+    child = spawn("powershell.exe",[psscript,url.query],{ cwd: process.cwd(), detached: false });
+    child.stdout.on("data",function(data){res.write(""+data)});
+    child.stderr.on("data",function(data){console.log(""+data)});
+    child.on("exit",function(){
+      console.log("Script finished");
       res.write('<hr>');
-
-      var spawn = require("child_process").spawn,child;
-      child = spawn("powershell.exe",[require.resolve("./stop-vlab.ps1"),url.query],{ cwd: process.cwd(), detached: false });
-      child.stdout.on("data",function(data){
-        var strData = ''+data;
-        if (strData.trim() != '') {res.write(""+data+" <br>")}
-      });
-      child.stderr.on("data",function(data){console.log(""+data)});
-      child.on("exit",function(){
-          console.log("Script finished");
-          res.write('<script type="text/javascript">window.location = "/instance?'+url.query+'";</script>');
-          res.end('Done.');
-      });
-      child.stdin.end();     
-    } 
-    // kill
-    else if (pathName === '/kill') {
-      res.writeHead(200, {'Content-Type': 'text/html'});
-      res.write(''+navbar);
-      res.write('Killing instance...');
+      res.write('<form method="post" action="/start?'+url.query+'">');
+      res.write('<button type="submit">Start</button> ');
+      res.write('<button type="submit" formaction="/stop?'+url.query+'">Stop</button> ');          
+      res.write('<button type="submit" formaction="/kill?'+url.query+'">Kill</button> ');  
+      res.write('<button type="submit" formaction="/destroy?'+url.query+'">Destroy</button> '); 
       res.write('<hr>');
+      res.write('</form>');
+      res.end(' ');
+    });
+    child.stdin.end();       
+}));
 
-      var spawn = require("child_process").spawn,child;
-      child = spawn("powershell.exe",[require.resolve("./stop-vlab.ps1"),url.query,"-kill"]);
-      child.stdout.on("data",function(data){
-        var strData = ''+data;
-        if (strData.trim() != '') {res.write(""+data+" <br>")}
-      });
-      child.stderr.on("data",function(data){console.log(""+data)});
-      child.on("exit",function(){
-          console.log("Script finished");
-          res.write('<script type="text/javascript">window.location = "/instance?'+url.query+'";</script>');
-          res.end('Done.');
-      });
-      child.stdin.end();     
-    } 
-    // destroy
-    else if (pathName === '/destroy') {
-      res.writeHead(200, {'Content-Type': 'text/html'});
-      res.write(''+navbar);
-      res.write('Destroying instance...');
-      res.write('<hr>');
+app.get('/config', (
+  function (req, res) { 
+    console.log(''+req.url);  
+    var psscript = require.resolve("./show-vlabsettings-html.ps1"); 
+    var pgtitle = "Configuration Settings";
+    res.on('error', function(data){console.log(""+data)});
 
-      var spawn = require("child_process").spawn,child;
-      child = spawn("powershell.exe",[require.resolve("./remove-vlab.ps1"),url.query],{ cwd: process.cwd(), detached: false });
-      child.stdout.on("data",function(data){
-        var strData = ''+data;
-        if (strData.trim() != '') {res.write(""+data+" <br>")}
-      });
-      child.stderr.on("data",function(data){console.log(""+data)});
-      child.on("exit",function(){
-          console.log("Script finished");
-          res.write('<script type="text/javascript">window.location = "/instances";</script>');
-          res.end('Done.');
-      });
-      child.stdin.end();     
-    } 
-    // Otherwise serve a file
-    else {     
-      console.log(pathName);
-      var filename = path.join(process.cwd(), pathName);
-      console.log(filename);
-      fs.exists(filename, function(exists) {
-        if(!exists) {
-          console.log("404: "+req.url);
-          res.writeHead(404, {"Content-Type":"text/html"});
-          res.write(''+navbar);
-          res.write("It doesn't look like anything to me.");
-          res.write('<hr>');
-          res.write('<a href="/">Take me Home</a>');
-          res.write('<hr>'+req.url);  
-          res.end();
-          //return;
-        }
-        else {
-        var mimeType = mimeTypes[path.extname(filename).split(".")[1]];
-        res.writeHead(200, {'Content-Type':mimeType});
+    res.writeHead(200, {'Content-Type': 'text/html'});
+    res.write(''+navbar);
+    res.write('<b>'+pgtitle+':</b><hr><br>');
 
-        var fileStream = fs.createReadStream(filename);
-        fileStream.pipe(res);
-        }
-      });
-    }
-  }
-));
+    console.log("spawning "+psscript);
+    var spawn = require("child_process").spawn,child;
+    child = spawn("powershell.exe",[psscript],{ cwd: process.cwd(), detached: false });
+    child.stdout.on("data",function(data){res.write(""+data)});
+    child.stderr.on("data",function(data){console.log(""+data)});
+    child.on("exit",function(){ res.end('<br><hr>:<hr>') });
+    child.stdin.end(); 
+}));
+
+app.post('/provision', (
+  function (req, res) { 
+    console.log(''+req.url);  
+    var psscript = require.resolve("./new-vlab.ps1"); 
+    var pgtitle = "Provisioning instance...";
+    var url = require('url').parse(req.url)
+    res.on('error', function(data){console.log(""+data)});
+
+    res.writeHead(200, {'Content-Type': 'text/html'});
+    res.write(''+navbar);
+    res.write('<b>'+pgtitle+'</b><hr><br>');
+
+    var spawn = require("child_process").spawn,child;
+    child = spawn("powershell.exe",[psscript,url.query],{ cwd: process.cwd(), detached: false });
+    child.stdout.on("data",function(data){
+      var strData = ''+data;
+      if (strData.trim() != '') {res.write(""+data+" <br>")}
+    });
+    child.stderr.on("data",function(data){console.log(""+data)});
+    child.on("exit",function(){
+      console.log("Script finished");
+      res.write('<script type="text/javascript">javascript:window.location.href(history.go(-1));</script>');
+      res.end('Done.');
+    });
+    child.stdin.end(); 
+}));
+
+app.post('/start', (
+  function (req, res) { 
+    console.log(''+req.url);  
+    var psscript = require.resolve("./start-vlab.ps1"); 
+    var pgtitle = "Starting instance...";
+    var url = require('url').parse(req.url)
+    res.on('error', function(data){console.log(""+data)});
+
+    res.writeHead(200, {'Content-Type': 'text/html'});
+    res.write(''+navbar);
+    res.write('<b>'+pgtitle+'</b><hr><br>');
+
+    var spawn = require("child_process").spawn,child;
+    child = spawn("powershell.exe",[psscript,url.query],{ cwd: process.cwd(), detached: false });
+    child.stdout.on("data",function(data){
+      var strData = ''+data;
+      if (strData.trim() != '') {res.write(""+data+" <br>")}
+    });
+    child.stderr.on("data",function(data){console.log(""+data)});
+    child.on("exit",function(){
+      console.log("Script finished");
+      res.write('<script type="text/javascript">window.location = "/instance?'+url.query+'";</script>');
+      res.end('Done.');
+    });
+    child.stdin.end(); 
+}));
+
+app.post('/stop', (
+  function (req, res) { 
+    console.log(''+req.url);  
+    var psscript = require.resolve("./stop-vlab.ps1"); 
+    var pgtitle = "Stopping instance...";
+    var url = require('url').parse(req.url)
+    res.on('error', function(data){console.log(""+data)});
+
+    res.writeHead(200, {'Content-Type': 'text/html'});
+    res.write(''+navbar);
+    res.write('<b>'+pgtitle+'</b><hr><br>');
+
+    var spawn = require("child_process").spawn,child;
+    child = spawn("powershell.exe",[psscript,url.query],{ cwd: process.cwd(), detached: false });
+    child.stdout.on("data",function(data){
+      var strData = ''+data;
+      if (strData.trim() != '') {res.write(""+data+" <br>")}
+    });
+    child.stderr.on("data",function(data){console.log(""+data)});
+    child.on("exit",function(){
+      console.log("Script finished");
+      res.write('<script type="text/javascript">window.location = "/instance?'+url.query+'";</script>');
+      res.end('Done.');
+    });
+    child.stdin.end(); 
+}));
+
+app.post('/kill', (
+  function (req, res) { 
+    console.log(''+req.url);  
+    var psscript = require.resolve("./stop-vlab.ps1"); 
+    var pgtitle = "Killing instance...";
+    var url = require('url').parse(req.url)
+    res.on('error', function(data){console.log(""+data)});
+
+    res.writeHead(200, {'Content-Type': 'text/html'});
+    res.write(''+navbar);
+    res.write('<b>'+pgtitle+'</b><hr><br>');
+
+    var spawn = require("child_process").spawn,child;
+    child = spawn("powershell.exe",[psscript,url.query,"-kill"],{ cwd: process.cwd(), detached: false });
+    child.stdout.on("data",function(data){
+      var strData = ''+data;
+      if (strData.trim() != '') {res.write(""+data+" <br>")}
+    });
+    child.stderr.on("data",function(data){console.log(""+data)});
+    child.on("exit",function(){
+      console.log("Script finished");
+      res.write('<script type="text/javascript">window.location = "/instance?'+url.query+'";</script>');
+      res.end('Done.');
+    });
+    child.stdin.end(); 
+}));
+
+app.post('/destroy', (
+  function (req, res) { 
+    console.log(''+req.url);  
+    var psscript = require.resolve("./remove-vlab.ps1"); 
+    var pgtitle = "Destroying instance...";
+    var url = require('url').parse(req.url)
+    res.on('error', function(data){console.log(""+data)});
+
+    res.writeHead(200, {'Content-Type': 'text/html'});
+    res.write(''+navbar);
+    res.write('<b>'+pgtitle+'</b><hr><br>');
+
+    var spawn = require("child_process").spawn,child;
+    child = spawn("powershell.exe",[psscript,url.query],{ cwd: process.cwd(), detached: false });
+    child.stdout.on("data",function(data){
+      var strData = ''+data;
+      if (strData.trim() != '') {res.write(""+data+" <br>")}
+    });
+    child.stderr.on("data",function(data){console.log(""+data)});
+    child.on("exit",function(){
+      console.log("Script finished");
+      res.write('<script type="text/javascript">window.location = "/instances";</script>');
+      res.end('Done.');
+    });
+    child.stdin.end(); 
+}));
+
+app.use(express.static('cmdb'));
+app.use(express.static('html'));
 
 app.listen(port, () => console.log(`listening on port ${port}!`))
 

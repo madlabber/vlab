@@ -80,7 +80,7 @@ $result=invoke-command -session $session -scriptblock {
     $diagram="$parent`.jpg"
     if ( Test-Path "$ScriptDirectory\cmdb\$diagram" -PathType Leaf ){
     Write-Host "<b>Topology:</b><hr>"
-    Write-Host "<img src=cmdb/$diagram alt=lab_diagram width=500>"}
+    Write-Host "<img src=$diagram alt=lab_diagram width=500>"}
     Write-Host "</td></tr></table>"
 } -ArgumentList $CURRENTVLAB,$ScriptDirectory
 

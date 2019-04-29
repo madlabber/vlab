@@ -19,13 +19,13 @@ $result=invoke-command -session $session -scriptblock {
     $refresh=$false
     if(!$timer){$timer = [System.Diagnostics.Stopwatch]::StartNew()}
     if($timer.elapsed.minutes -ge 5){$refresh=$true}
-    if(!VMHosts){$refresh=$true}
+    if(!$VMHosts){$refresh=$true}
 
     # Gather data
     if($refresh){
         # config files
         $conf=. "$ScriptDirectory\get-vlabsettings.ps1" 
-        
+
         # Descriptions
         $descriptions=. "$ScriptDirectory\get-vlabdescriptions.ps1"
 
