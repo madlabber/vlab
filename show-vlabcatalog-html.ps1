@@ -15,19 +15,36 @@ $session=.\get-vlabsession.ps1
 $result=invoke-command -session $session -scriptblock { 
     param($ScriptDirectory)
 
-    # Descriptions
-    $descriptions=. "$ScriptDirectory\get-vlabdescriptions.ps1"
+    # Manage the refresh timer
+    $refresh=$false
+    if(!$timer){$timer = [System.Diagnostics.Stopwatch]::StartNew()}
+    if($timer.elapsed.minutes -ge 5){$refresh=$true}
+    if(!VMHosts){$refresh=$true}
 
-    # Catalog entries are vols that are not flexclones
-    $labvols=get-ncvol | where { $_.Name -like "lab_*" } | where { ! $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name }
+    # Gather data
+    if($refresh){
+        # config files
+        $conf=. "$ScriptDirectory\get-vlabsettings.ps1" 
+        
+        # Descriptions
+        $descriptions=. "$ScriptDirectory\get-vlabdescriptions.ps1"
+
+        # Catalog entries are vols that are not flexclones
+        $vols=get-ncvol
+        $labs=$vols | where { $_.Name -like "lab_*" } | where { ! $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name }
+        $instances=$vols | where { $_.Name -like "lab_*" } | where { $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name }
+
+        # reset the timer
+        $timer = [System.Diagnostics.Stopwatch]::StartNew()
+    }
 
     # Output in HTML format
     $output="<table>"
     $output+="<tr><td width=180px><u>Name</u></td><td></td><td><u>Description</u></td></tr>"
-    foreach($labvol in $labvols){
-        $output+='<tr><td><a href="/item?'+$labvol+'">'+$labvol+'</a></td>'      
+    foreach($lab in $labs){
+        $output+='<tr><td><a href="/item?'+$lab+'">'+$lab+'</a></td>'      
         $output+="<td></td><td>"    
-        $output+=$descriptions[$labvol.Name]
+        $output+=$descriptions[$lab.Name]
         $output+="</td></tr>"
     }
     $output+="</table>"
@@ -36,5 +53,5 @@ $result=invoke-command -session $session -scriptblock {
 
 $result=disconnect-pssession -Name "node-vlab" -IdleTimeoutSec 3600 -WarningAction silentlyContinue
 
-#This keeps the powershell process from ending before all of the output has reached the node.js front end.
+# This keeps the powershell process from ending before all of the output has reached the node.js front end.
 start-sleep -Milliseconds 50

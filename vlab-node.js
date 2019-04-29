@@ -1,6 +1,10 @@
-var http = require('http');
+const express = require('express');
+const app=express();
+const port = 8080
+
 var fs = require('fs');
 var path = require('path');
+
 
 var mimeTypes = {
   "html": "text/html",
@@ -13,7 +17,7 @@ var mimeTypes = {
   "css": "text/css",
   "ico": "image/x-icon"};
 
-http.createServer(
+app.get('/*', ( 
   function (req, res) {
 
     var url = require('url').parse(req.url)
@@ -279,13 +283,16 @@ http.createServer(
       });
     }
   }
-).listen(8080);
+));
 
-// timer based restart to use the latest version
+app.listen(port, () => console.log(`listening on port ${port}!`))
+
 console.log("This is pid " + process.pid);
-//console.log("process.argv.shift:"+process.argv.shift());
 console.log("process.cwd:"+process.cwd());
 console.log("process.argv:"+process.argv);
+
+// timer based restart to use the latest version
+//console.log("process.argv.shift:"+process.argv.shift());
 // setTimeout(function () {
 //     process.on("exit", function () {
 //         require("child_process").spawn(process.argv.shift(), process.argv, {
@@ -295,6 +302,3 @@ console.log("process.argv:"+process.argv);
 //     });
 //     process.exit();
 // }, 60000);
-
-
- //end input

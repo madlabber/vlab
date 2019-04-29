@@ -15,9 +15,12 @@ $result=invoke-command -session $session -scriptblock {
     #get power status
     $result=get-vapp | foreach { $powerstate = @{} } { $powerstate[$_.Name] = $_.Status }
 
-    # List volumes that start with lab_ that are NOT flexclones
-    $labvols=get-ncvol | where { $_.Name -like "lab_*" } | where { $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name } | sort
+    # Gather data
+    $vols=get-ncvol
+    #$labs=$vols | where { $_.Name -like "lab_*" } | where { ! $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name } | sort
+    $instances=$vols | where { $_.Name -like "lab_*" } | where { $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name } | sort
 
+    # Build the output in HTML
     $output="<table>"
     $output+="<tr>" `
             +"<td width=180px><u>Name</u></td><td></td>" `
@@ -26,13 +29,13 @@ $result=invoke-command -session $session -scriptblock {
             +"<td><u>Used</u></td><td></td>" `
             +"<td><u>Available</u></td>" `
             +"</tr>"
-    foreach($labvol in $labvols){
+    foreach($instance in $instances){
         $output+="<tr>" `
-               +'<tr><td><a href="/instance?'+$labvol+'">'+$labvol+'</a></td><td></td>' `
-               +"<td>"+$powerstate[$labvol.Name]+"</td><td></td>" `
-               +"<td>"+($labvol.TotalSize / 1GB).tostring("n1")+" GB</td><td></td>" `
-               +"<td>"+$($labvol.Used/100).tostring("p0")+"</td><td></td>" `
-               +"<td>"+($labvol.Available / 1GB).tostring("n1")+" GB</td>" `
+               +'<tr><td><a href="/instance?'+$instance+'">'+$instance+'</a></td><td></td>' `
+               +"<td>"+$powerstate[$instance.Name]+"</td><td></td>" `
+               +"<td>"+($instance.TotalSize / 1GB).tostring("n1")+" GB</td><td></td>" `
+               +"<td>"+$($instance.Used/100).tostring("p0")+"</td><td></td>" `
+               +"<td>"+($instance.Available / 1GB).tostring("n1")+" GB</td>" `
                +"</tr>"
     }
     $output+="</table>"
