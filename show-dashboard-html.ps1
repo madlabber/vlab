@@ -14,22 +14,37 @@ $session=.\get-vlabsession.ps1
 $result=invoke-command -session $session -scriptblock { 
     param($ScriptDirectory)
 
-    $conf=. "$ScriptDirectory\get-vlabsettings.ps1"
+    #$conf=. "$ScriptDirectory\get-vlabsettings.ps1"
     
-    # Gather information
-    $vols=get-ncvol
-    $labs=$vols | where { $_.Name -like "lab_*" } | where { ! $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name }
-    $instances=$vols | where { $_.Name -like "lab_*" } | where { $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name }
-    $running=get-vapp | where { $_.Name -like "lab_*" } | where {$_.Status -eq "Started"}
-    $VMHosts=get-cluster $conf.VICluster | get-vmhost
-    $CpuUsageMhz=($VMHosts | measure-object -property CpuUsageMhz -sum).sum
-    $CpuTotalMhz=($VMHosts | measure-object -property CpuTotalMhz -sum).sum
-    $MemoryUsageGB=($VMHosts | measure-object -property MemoryUsageGB -sum).sum
-    $MemoryTotalGB=($VMHosts | measure-object -property MemoryTotalGB -sum).sum
-    $NCAggrs=$(foreach ($aggr in $(($vols | where  {$_.Name -like "lab_*"}).aggregate | sort-object | get-unique)){get-ncaggr $aggr})
-    $TotalDisk=($NCAggrs | measure-object -property TotalSize -sum).sum / 1GB
-    $AvailableDisk=($NCAggrs | measure-object -property Available -sum).sum / 1GB
+    # Manage the refresh timer
+    $refresh=$false
+    if(!$timer){$timer = [System.Diagnostics.Stopwatch]::StartNew()}
+    if($timer.elapsed.minutes -ge 1){$refresh=$true}
+    #write-host "timer: "$timer.elapsed.minutes
 
+    # Gather data
+    if($refresh){
+
+        #Collect Objects  
+        $conf=. "$ScriptDirectory\get-vlabsettings.ps1"              
+        $vols=get-ncvol
+        $labs=$vols | where { $_.Name -like "lab_*" } | where { ! $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name }
+        $instances=$vols | where { $_.Name -like "lab_*" } | where { $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name }
+        $VMHosts=get-cluster $conf.VICluster | get-vmhost
+        $NCAggrs=$(foreach ($aggr in $(($vols | where  {$_.Name -like "lab_*"}).aggregate | sort-object | get-unique)){get-ncaggr $aggr})
+        $running=get-vapp | where { $_.Name -like "lab_*" } | where {$_.Status -eq "Started"}
+
+        # Measure Objects
+        $CpuUsageMhz=($VMHosts | measure-object -property CpuUsageMhz -sum).sum
+        $CpuTotalMhz=($VMHosts | measure-object -property CpuTotalMhz -sum).sum
+        $MemoryUsageGB=($VMHosts | measure-object -property MemoryUsageGB -sum).sum
+        $MemoryTotalGB=($VMHosts | measure-object -property MemoryTotalGB -sum).sum
+        $TotalDisk=($NCAggrs | measure-object -property TotalSize -sum).sum / 1GB
+        $AvailableDisk=($NCAggrs | measure-object -property Available -sum).sum / 1GB
+
+        # reset the timer
+        $timer = [System.Diagnostics.Stopwatch]::StartNew()
+    }
     # Build the dashboard in HTML
     Write-Host "<center><table>"
     Write-Host   "<tr><td><b><h3><center>Labs</center></h3></b></td><td></td><td><b><h3><center>Resources</center></h3></b></td></tr>"
