@@ -19,7 +19,7 @@ $result=invoke-command -session $session -scriptblock {
     # Manage the refresh timer
     $refresh=$false
     if(!$timer){$timer = [System.Diagnostics.Stopwatch]::StartNew()}
-    if($timer.elapsed.minutes -ge 1){$refresh=$true}
+    if($timer.elapsed.minutes -ge 5){$refresh=$true}
     if(!$VMHosts){$refresh=$true}
 
     # Gather data
@@ -82,7 +82,7 @@ $result=invoke-command -session $session -scriptblock {
     Write-Host            "<td align=center><h1>"$(($TotalDisk-$AvailableDisk)/$TotalDisk).tostring('p0').Replace(' ','')"</h1></td><td width=25px></td>"
     Write-Host          "</tr>"
     Write-Host          "<tr>"
-    Write-Host            "<td> </td><td width=25px></td>"
+    Write-Host            "<td><h6> "$conf.VICluster"</h6></td><td width=25px></td>"
     Write-Host            "<td><h6> "$CpuUsageMhz" / "$CpuTotalMhz" Mhz </h6></td><td width=25px></td>"
     Write-Host            "<td><h6> "$MemoryUsageGB.tostring("n2")" / "$MemoryTotalGB.tostring("n2")"GB </h6></td><td width=25px></td>"
     Write-host            "<td><h6> "$($TotalDisk-$AvailableDisk).tostring('n2')" / "$TotalDisk.tostring('n2')" GB </h6></td><td width=25px></td></tr>"
@@ -94,3 +94,6 @@ $result=invoke-command -session $session -scriptblock {
 } -ArgumentList $ScriptDirectory
 
 $result=disconnect-pssession -Name "node-vlab" -IdleTimeoutSec 3600 -WarningAction silentlyContinue
+
+#This keeps the powershell process from ending before all of the output has reached the node.js front end.
+start-sleep -Milliseconds 50

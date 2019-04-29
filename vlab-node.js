@@ -11,7 +11,7 @@ app.get('/', (
     console.log(''+req.url);  
     var psscript = require.resolve("./show-dashboard-html.ps1"); 
     var pgtitle = "";
-    //res.on('error', function(data){console.log(""+data)});
+    res.on('error', function(data){console.log(""+data)});
 
     res.writeHead(200, {'Content-Type': 'text/html'});
     res.write(''+navbar);
@@ -309,14 +309,11 @@ console.log("This is pid " + process.pid);
 console.log("process.cwd:"+process.cwd());
 console.log("process.argv:"+process.argv);
 
-// timer based restart to use the latest version
-//console.log("process.argv.shift:"+process.argv.shift());
-// setTimeout(function () {
-//     process.on("exit", function () {
-//         require("child_process").spawn(process.argv.shift(), process.argv, {
-//             cwd: process.cwd(),
-//             detached : true,
-//         });
-//     });
-//     process.exit();
-// }, 60000);
+// Poll for fresh state info
+setInterval(function () { 
+  var psscript = require.resolve("./get-vlabstats.ps1"); 
+
+  console.log("spawning "+psscript);
+  var spawn = require("child_process").spawn,child;
+  child = spawn("powershell.exe",[psscript],{ cwd: process.cwd(), detached: true });
+}, 60000);
