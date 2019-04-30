@@ -9,8 +9,14 @@
     Parameters are supplied by configuration file.
 #>
 
+$ScriptDirectory = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
+
 $session=.\get-vlabsession.ps1
 $result=invoke-command -session $session -scriptblock { 
+    param($ScriptDirectory)   
+
+    # Descriptions
+    $descriptions=. "$ScriptDirectory\get-vlabdescriptions.ps1"
 
     #get power status
     $result=get-vapp | foreach { $powerstate = @{} } { $powerstate[$_.Name] = $_.Status }
@@ -22,25 +28,27 @@ $result=invoke-command -session $session -scriptblock {
 
     # Build the output in HTML
     $output="<table>"
-    $output+="<tr>" `
-            +"<td width=180px><u>Name</u></td><td></td>" `
-            +"<td><u>Status</u></td><td></td>" `
-            +"<td><u>TotalSize</u></td><td></td>" `
-            +"<td><u>Used</u></td><td></td>" `
-            +"<td><u>Available</u></td>" `
-            +"</tr>"
+    $output+="  <tr>" 
+    $output+="    <td width=180px><u>Name</u></td><td> </td>" 
+    $output+="    <td><u>Status</u></td><td> </td>" 
+    $output+="    <td><u>TotalSize</u></td><td> </td>" 
+    $output+="    <td><u>Used</u></td><td> </td>" 
+   # $output+="    <td><u>Available</u></td><td> </td>" 
+    $output+="    <td><u>Description</u></td>" 
+    $output+="  </tr>"
     foreach($instance in $instances){
-        $output+="<tr>" `
-               +'<tr><td><a href="/instance?'+$instance+'">'+$instance+'</a></td><td></td>' `
-               +"<td>"+$powerstate[$instance.Name]+"</td><td></td>" `
-               +"<td>"+($instance.TotalSize / 1GB).tostring("n1")+" GB</td><td></td>" `
-               +"<td>"+$($instance.Used/100).tostring("p0")+"</td><td></td>" `
-               +"<td>"+($instance.Available / 1GB).tostring("n1")+" GB</td>" `
-               +"</tr>"
+      $output+="<tr>" 
+      $output+='  <td><a href="/instance?'+$instance+'">'+$instance+'</a></td><td> </td>' 
+      $output+="  <td>"+$powerstate[$instance.Name]+"</td><td> </td>" 
+      $output+="  <td align=right>"+($instance.TotalSize / 1GB).tostring("n1")+" GB</td><td> </td>" 
+      $output+="  <td>"+$($instance.Used/100).tostring("p0")+"</td><td> </td>" 
+     # $output+="  <td>"+($instance.Available / 1GB).tostring("n1")+" GB</td><td> </td>" 
+      $output+="  <td>"+$descriptions[$instance.VolumeCloneAttributes.VolumeCloneParentAttributes.Name]+"</td>" 
+      $output+="</tr>"
     }
     $output+="</table>"
     $output | Write-Host
-} 
+} -ArgumentList $ScriptDirectory
 
 $result=disconnect-pssession -Name "node-vlab" -IdleTimeoutSec 3600 -WarningAction silentlyContinue
 
