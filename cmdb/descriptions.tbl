@@ -24,3 +24,4 @@ lab_vs6icm=vSphere 6.0 ICM course study lab
 lab_vs6icm_v2=vSphere 6.0 ICM course study lab - V2
 lab_vsicm65=vSphere 6.5 Install, Configure & Manage practice lab
 lab_vsos65=vSphere 6.5 Optimize & Scale practice lab
+lab_ansible=An Ansible demo lab with ONTAP 9.5
