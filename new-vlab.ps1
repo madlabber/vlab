@@ -113,17 +113,19 @@ foreach($VMXFolder in $SearchResult) {
 }
 
 #Connect nics to the new portgroups
-write-host "..Connecting Nics"
+write-host "..Connecting LAN Nics"
 $pgID=1
-$networkAdapters=$cloneApp | get-vm | get-networkadapter
+$networkAdapters=$cloneApp | get-vm | get-networkadapter | where { $_.NetworkName -like "$vApp*"}
 foreach($srcPortGroup in $($srcApp | get-vm | get-virtualportgroup | where { $_.Name -like "$vApp*" })) {
 	$pgName="$vAppNew"+"_$pgID"
 	write-host "....$srcPortGroup => $pgName"	
 	$result=$networkAdapters | where {$_.NetworkName -eq $srcPortGroup } | set-networkadapter -NetworkName "$pgName" -confirm:$false
 	$pgID++
 }
-$networkAdapters=$cloneApp | get-vm | get-networkadapter
-$result=$networkAdapters | where { $_.NetworkName -notlike "$vAppNew*"} | set-networkadapter -NetworkName $conf.VIPortgroup -confirm:$false
+
+write-host "..Connected WAN Nics"
+$WANAdapters=$cloneApp | get-vm | get-networkadapter | where { $_.NetworkName -notlike "$vAppNew*"} 
+$result=$WANAdapters | set-networkadapter -NetworkName $conf.VIPortgroup -confirm:$false
 
 # Connect the WAN interface
 #$oldWAN=$(get-vapp $vAppNew | get-vm | ?{ $_.Name -eq "gateway"} | get-networkadapter | ?{ $_.NetworkName -notlike "$vAppNew*" }).NetworkName
