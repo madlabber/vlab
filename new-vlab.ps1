@@ -43,11 +43,12 @@ if ( ! $VIDatastore ) { $VIDatastore=$conf.VIDatastore }
 
 # Find next vAppID
 Write-Host "Getting next vAppID."
+$vApps=get-vapp
 if ( ! $vAppNew ) {
 	do {
 		$newID++
 		$vAppNew="$vApp"+"_"+"$newID"
-		$result=get-vapp | where { $_.Name -eq "$vAppNew" }
+		$result=$vApps | where { $_.Name -eq "$vAppNew" }
 	} while ( $result )
 } 
 #endregion
@@ -121,6 +122,7 @@ foreach($srcPortGroup in $($srcApp | get-vm | get-virtualportgroup | where { $_.
 	$result=$networkAdapters | where {$_.NetworkName -eq $srcPortGroup } | set-networkadapter -NetworkName "$pgName" -confirm:$false
 	$pgID++
 }
+$networkAdapters=$cloneApp | get-vm | get-networkadapter
 $result=$networkAdapters | where { $_.NetworkName -notlike "$vAppNew*"} | set-networkadapter -NetworkName $conf.VIPortgroup -confirm:$false
 
 # Connect the WAN interface
