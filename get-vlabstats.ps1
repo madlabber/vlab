@@ -14,36 +14,27 @@ $session=.\get-vlabsession.ps1
 $result=invoke-command -session $session -scriptblock { 
     param($ScriptDirectory)
 
-    #$conf=. "$ScriptDirectory\get-vlabsettings.ps1"
-    
-    # Manage the refresh timer
-    $refresh=$true
-    if(!$timer){$timer = [System.Diagnostics.Stopwatch]::StartNew()}
+    #Collect Objects  
+    $conf=. "$ScriptDirectory\get-vlabsettings.ps1"  
+    $descriptions=. "$ScriptDirectory\get-vlabdescriptions.ps1"            
+    $vols=get-ncvol
+    $labs=$vols | where { $_.Name -like "lab_*" } | where { ! $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name }
+    $instances=$vols | where { $_.Name -like "lab_*" } | where { $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name }
+    $VMHosts=get-cluster $conf.VICluster | get-vmhost
+    $NCAggrs=$(foreach ($aggr in $(($vols | where  {$_.Name -like "lab_*"}).aggregate | sort-object | get-unique)){get-ncaggr $aggr})
+    $running=get-vapp | where { $_.Name -like "lab_*" } | where {$_.Status -eq "Started"}
 
-    # Gather data
-    if($refresh){
+    # Measure Objects
+    $CpuUsageMhz=($VMHosts | measure-object -property CpuUsageMhz -sum).sum
+    $CpuTotalMhz=($VMHosts | measure-object -property CpuTotalMhz -sum).sum
+    $MemoryUsageGB=($VMHosts | measure-object -property MemoryUsageGB -sum).sum
+    $MemoryTotalGB=($VMHosts | measure-object -property MemoryTotalGB -sum).sum
+    $TotalDisk=($NCAggrs | measure-object -property TotalSize -sum).sum / 1GB
+    $AvailableDisk=($NCAggrs | measure-object -property Available -sum).sum / 1GB
 
-        #Collect Objects  
-        $conf=. "$ScriptDirectory\get-vlabsettings.ps1"  
-        $descriptions=. "$ScriptDirectory\get-vlabdescriptions.ps1"            
-        $vols=get-ncvol
-        $labs=$vols | where { $_.Name -like "lab_*" } | where { ! $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name }
-        $instances=$vols | where { $_.Name -like "lab_*" } | where { $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name }
-        $VMHosts=get-cluster $conf.VICluster | get-vmhost
-        $NCAggrs=$(foreach ($aggr in $(($vols | where  {$_.Name -like "lab_*"}).aggregate | sort-object | get-unique)){get-ncaggr $aggr})
-        $running=get-vapp | where { $_.Name -like "lab_*" } | where {$_.Status -eq "Started"}
+    # reset the timer
+    $timer = [System.Diagnostics.Stopwatch]::StartNew()
 
-        # Measure Objects
-        $CpuUsageMhz=($VMHosts | measure-object -property CpuUsageMhz -sum).sum
-        $CpuTotalMhz=($VMHosts | measure-object -property CpuTotalMhz -sum).sum
-        $MemoryUsageGB=($VMHosts | measure-object -property MemoryUsageGB -sum).sum
-        $MemoryTotalGB=($VMHosts | measure-object -property MemoryTotalGB -sum).sum
-        $TotalDisk=($NCAggrs | measure-object -property TotalSize -sum).sum / 1GB
-        $AvailableDisk=($NCAggrs | measure-object -property Available -sum).sum / 1GB
-
-        # reset the timer
-        $timer = [System.Diagnostics.Stopwatch]::StartNew()
-    }
 
 } -ArgumentList $ScriptDirectory
 
