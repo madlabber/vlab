@@ -309,6 +309,15 @@ console.log("This is pid " + process.pid);
 console.log("process.cwd:"+process.cwd());
 console.log("process.argv:"+process.argv);
 
+// Gather data at startup
+setTimeout(function () { 
+  var psscript = require.resolve("./get-vlabstats.ps1"); 
+
+  console.log("spawning "+psscript);
+  var spawn = require("child_process").spawn,child;
+  child = spawn("powershell.exe",[psscript],{ cwd: process.cwd(), detached: true });
+}, 1000);
+
 // Poll for fresh state info
 setInterval(function () { 
   var psscript = require.resolve("./get-vlabstats.ps1"); 
