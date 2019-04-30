@@ -68,7 +68,6 @@ $srcApp=Get-vApp $vApp
 # Create New portgroups
 # Hosts have a portgroup limit of 500ish
 write-host "..Creating portgroups"
-$pgID=1
 [int]$pgVLan=$conf.vlanbase
 $virtualSwitches=get-cluster | ?{ $_.Name -eq $conf.VICluster } | get-vmhost | get-virtualswitch | ?{ $_.Name -eq $conf.vswitch}
 $portGroups=$virtualSwitches | get-virtualportgroup
@@ -79,12 +78,10 @@ foreach($srcPortGroup in $( $srcApp | get-vm | get-virtualportgroup | where { $_
 		$result=$portGroups | where { $_.VLanID -eq $pgVLan }
 	} while ( $result )
 
-	#PortGroups are sequential independant of VLAN ID
-	$pgName="$vAppNew"+"_$pgID"
-	Write-Host "....$pgName"
+	# Created portgroup lab_%name%_%suffix%
+	$pgName="$vAppNew"+$srcPortGroup.name.substring($vApp.length)
+	Write-Host "....$srcPortGroup => $pgName"
 	$result=$virtualSwitches | new-virtualportgroup -name $pgName -vlanid $pgVLan
-	$pgID++
-	$pgVLan++
 }
 
 
@@ -112,20 +109,33 @@ foreach($VMXFolder in $SearchResult) {
 	}
 }
 
-#Connect nics to the new portgroups
+# Connect nics to the new portgroups
 write-host "..Connecting LAN Nics"
-$pgID=1
-$networkAdapters=$cloneApp | get-vm | get-networkadapter | where { $_.NetworkName -like "$vApp*"}
-foreach($srcPortGroup in $($srcApp | get-vm | get-virtualportgroup | where { $_.Name -like "$vApp*" })) {
-	$pgName="$vAppNew"+"_$pgID"
-	write-host "....$srcPortGroup => $pgName"	
-	$result=$networkAdapters | where {$_.NetworkName -eq $srcPortGroup } | set-networkadapter -NetworkName "$pgName" -confirm:$false
-	$pgID++
+$cloneVMs=$cloneApp | get-vm
+$srcPortGroups=$cloneVMs | get-virtualportgroup | where { $_.Name -like "$vApp*" }
+$networkAdapters=$cloneVMs | get-networkadapter
+$LANAdapters=$networkAdapters | where { $_.NetworkName -like "$vApp*"}
+$WANAdapters=$networkAdapters | where { $_.NetworkName -notlike "$vApp*"} 
+foreach($srcPortGroup in $srcPortGroups){
+	$pgName="$vAppNew"+$srcPortGroup.name.substring($vApp.length)
+	write-host "....$srcPortGroup => $pgName"
+	$result=$LANAdapters | where {$_.NetworkName -eq $srcPortGroup } | set-networkadapter -NetworkName "$pgName" -confirm:$false
 }
-
 write-host "..Connected WAN Nics"
-$WANAdapters=$cloneApp | get-vm | get-networkadapter | where { $_.NetworkName -notlike "$vAppNew*"} 
 $result=$WANAdapters | set-networkadapter -NetworkName $conf.VIPortgroup -confirm:$false
+
+#foreach ($adapter in $networkAdapters){
+#	$pgName="$vAppNew"+$adapter.NetworkName.substring($vApp.length)
+#	$result=$adapter | set-networkadapter -networkName "$pgName"
+#}
+#$result=$networkAdapters | set-networkadapter -NetworkName "$vAppNew"+$_.NetworkName.substring($vApp.length)
+#$networkAdapters
+
+#foreach($srcPortGroup in $($srcApp | get-vm | get-virtualportgroup | where { $_.Name -like "$vApp*" })) {
+#	$pgName="$vAppNew"+$srcPortGroup.name.substring($vApp.length)
+#	write-host "....$srcPortGroup => $pgName"	
+#	$result=$networkAdapters | where {$_.NetworkName -eq $srcPortGroup } | set-networkadapter -NetworkName "$pgName" -confirm:$false
+#}
 
 # Connect the WAN interface
 #$oldWAN=$(get-vapp $vAppNew | get-vm | ?{ $_.Name -eq "gateway"} | get-networkadapter | ?{ $_.NetworkName -notlike "$vAppNew*" }).NetworkName
