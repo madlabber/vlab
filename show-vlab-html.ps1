@@ -47,10 +47,20 @@ $result=invoke-command -session $session -scriptblock {
     Write-Host "<tr><td><b>Description:</b></td><td> $($descriptions[$parent]) </td></tr>"
     Write-Host "<tr><td><b>Date:</b></td><td> $reldate </td></tr>"
     if ( $wanip ){ 
-        $row='<tr><td><b>IP:</b></td><td><a href="rdp://full%20address=s:'
+        $row='<tr><td><b>RDP:</b></td><td><a href="rdp://full%20address=s:'
         $row+="$wanip"
         $row+=':3389&audiomode=i:2&disable%20themes=i:1">'+"$wanip"+'</a></td></tr>' 
         Write-Host $row 
+        $rdpurl="$($conf.rdphost)/Myrtille/?__EVENTTARGET=&__EVENTARGUMENT="
+        $rdpurl+="&server=$wanip"
+        $rdpurl+="&domain=$($conf.rdpdomain)"
+        $rdpurl+="&user=$($conf.rdpuser)"
+        $rdpurl+="&passwordHash=$($conf.passwordhash)"
+        $rdpurl+="&connect=Connect%21"
+        $row='<tr><td><b>Browser:</b></td><td><a href="'
+        $row+="$rdpurl"
+        $row+='" target=_blank> Connect </a></td></tr>'
+        Write-Host $row
     }
     Write-Host "</table><br>"
 
