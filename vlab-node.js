@@ -14,6 +14,7 @@ app.get('/', (
     res.on('error', function(data){console.log(""+data)});
 
     res.writeHead(200, {'Content-Type': 'text/html'});
+    res.write('<head><meta http-equiv="refresh" content="60" /></head>');
     res.write(''+navbar);
     res.write('<b>'+pgtitle+':</b><hr><br>');
 
@@ -123,6 +124,7 @@ app.get('/instance', (
     res.on('error', function(data){console.log(""+data)});
 
     res.writeHead(200, {'Content-Type': 'text/html'});
+    res.write('<head><meta http-equiv="refresh" content="60" /></head>');
     res.write(''+navbar);
     res.write('<b>'+pgtitle+':</b><hr><br>');
 
