@@ -18,6 +18,9 @@ $result=invoke-command -session $session -scriptblock {
     # Descriptions
     $descriptions=. "$ScriptDirectory\get-vlabdescriptions.ps1"
 
+    #conf
+    $conf=. "$ScriptDirectory\get-vlabsettings.ps1"
+
     #get power status
     $result=get-vapp | foreach { $powerstate = @{} } { $powerstate[$_.Name] = $_.Status }
 
@@ -27,33 +30,35 @@ $result=invoke-command -session $session -scriptblock {
     $instances=$vols | where { $_.Name -like "lab_*" } | where { $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name } | sort
 
     # Build the output in HTML
-    $output='<form action=""><table>'
+    $output='<form action="" method="post"><table>'
     $output+="  <tr>"
     $output+="    <td width=10></td>" 
-    $output+="    <td width=180px><u>Name</u></td><td> </td>"
-    $output+="    <td width=360px><u>Description</u></td>"     
-    $output+="    <td width=60px><u>Status</u></td><td width=10></td>" 
-#    $output+="    <td width=70px align=right><u>TotalSize</u></td><td> </td>" 
-#    $output+="    <td width=60px align=right><u>Used</u></td><td width=10> </td>" 
-    $output+="    <td width=60px align=left><u>Session</u></td><td width=10></td>"
-   # $output+="    <td><u>Available</u></td><td> </td>" 
+    $output+="    <td><u>Name</u></td>"
+    $output+="    <td><u>Description</u></td>"     
+    $output+="    <td><u>Status</u></td>" 
+    $output+="    <td align=left><u>Controls</u></td>"
+    $output+="    <td align=left><u>Session</u></td>"
  
     $output+="  </tr>"
     foreach($instance in $instances){
       $output+="<tr>" 
       if ( $powerstate[$instance.name] -eq "Started"){
-      $output+="  <td><font color=green>&#9864</font></td>"        
+          $output+="  <td valign=top><font color=green>&#9864</font></td>"        
       }
       else {
-      $output+="  <td></td>"        
+          $output+="  <td></td>"        
       }
 
-      $output+='  <td><a href="/instance?'+$instance+'">'+$instance+'</a></td><td> </td>' 
-      $output+="  <td>"+$descriptions[$instance.VolumeCloneAttributes.VolumeCloneParentAttributes.Name]+"</td>"       
-      $output+="  <td>"+$powerstate[$instance.Name]+"</td><td> </td>" 
-#      $output+="  <td align=right>"+($instance.TotalSize / 1GB).tostring("n1")+" GB</td><td> </td>" 
-#      $output+="  <td align=right>"+$($instance.Used/100).tostring("p0")+"</td><td> </td>" 
-    
+      $output+='  <td valign=top><a href="/instance?'+$instance+'">'+$instance+'</a></td>' 
+      $output+="  <td valign=top>"+$descriptions[$instance.VolumeCloneAttributes.VolumeCloneParentAttributes.Name]+"</td>"       
+      $output+="  <td valign=top>"+$powerstate[$instance.Name]+"</td>" 
+      #Action buttons:
+      $output+="    <td>"
+    # $output+="      <input type=button value=Start onclick=`"window.open('$starturl')`"/>"
+      $output+="      <button type=`"submit`" formaction=`"/start?$($instance.name)`">Start</button>"
+      $output+="      <button type=`"submit`" formaction=`"/stop?$($instance.name)`">Stop</button>"
+      $output+="      <button type=`"submit`" formaction=`"/kill?$($instance.name)`">Kill</button>"
+      $output+="    </td>"
       $rdpurl=""
       if ( $powerstate[$instance.name] -eq "Started"){
         # Find the WAN IP of the gateway VM
@@ -69,16 +74,14 @@ $result=invoke-command -session $session -scriptblock {
             $rdpurl+="&connect=Connect%21"
         }
       }
-      if ( $rdpurl ){
-          $output+="<td>"
-        #  $output+="<a href=`"$rdpurl`" target=_blank>Connect</a>"
+      if ( $rdpurl -and $wanip ){
+          $output+="<td valign=top>"
           $output+="<input type=button style=`"background-color:green;color:white`" value=Connect onclick=`"window.open('$rdpurl')`"/>"
-          $output+='</td><td></td>'
+          $output+="</td>"
       }
       else {
-          $output+="<td></td><td></td>"
+          $output+="<td></td>"
       }
-    # $output+="  <td>"+($instance.Available / 1GB).tostring("n1")+" GB</td><td> </td>" 
       $output+="</tr>"
     }
     $output+="</table></form>"

@@ -4,7 +4,7 @@ const port = 8080
 
 var fs = require('fs');
 var path = require('path');
-var navbar = '<center><table><tr><td><center><b><font size=5>Homelab On Demand</font></b></center></td></tr><tr><td><center><a href="/">Home</a> | <a href="/catalog">Catalog</a> | <a href="/instances">Instances</a> | <a href="/admin">Admin</a></center></td></tr></table></center><hr>';
+var navbar = '<center><table><tr><td><center><b><h2 style="margin:0;padding:0;"">Homelab On Demand</h2></b></center></td></tr><tr><td><center><a href="/">Home</a> | <a href="/catalog">Catalog</a> | <a href="/instances">Instances</a> | <a href="/admin">Admin</a></center></td></tr></table></center><hr>';
 
 app.get('/', (
   function (req, res) { 
@@ -14,7 +14,7 @@ app.get('/', (
     res.on('error', function(data){console.log(""+data)});
 
     res.writeHead(200, {'Content-Type': 'text/html'});
-    res.write('<head><meta http-equiv="refresh" content="60" /></head>');
+    res.write('<head><meta http-equiv="refresh" content="60" /><meta name="viewport" content="width=device-width, initial-scale=1"></head>');
     res.write(''+navbar);
     res.write('<b>'+pgtitle+':</b><hr><br>');
 
@@ -34,6 +34,7 @@ app.get('/catalog', (
     var pgtitle = "Lab Catalog";      
 
     res.writeHead(200, {'Content-Type': 'text/html'});
+    res.write('<head><meta name="viewport" content="width=device-width, initial-scale=1"></head>');
     res.write(''+navbar);
     res.write('<b>'+pgtitle+':</b><hr><br>');
 
@@ -56,6 +57,7 @@ app.get('/instances', (
     let pathName = url.pathname
     
     res.writeHead(200, {'Content-Type': 'text/html'});
+    res.write('<head><meta http-equiv="refresh" content="60" /><meta name="viewport" content="width=device-width, initial-scale=1"></head>');
     res.write(''+navbar);
     res.write('<b>'+pgtitle+':</b><hr><br>');
 
@@ -124,7 +126,7 @@ app.get('/instance', (
     res.on('error', function(data){console.log(""+data)});
 
     res.writeHead(200, {'Content-Type': 'text/html'});
-    res.write('<head><meta http-equiv="refresh" content="60" /></head>');
+    res.write('<head><meta http-equiv="refresh" content="60" /><meta name="viewport" content="width=device-width, initial-scale=1"></head>');
     res.write(''+navbar);
     res.write('<b>'+pgtitle+':</b><hr><br>');
 
@@ -194,7 +196,7 @@ app.post('/provision', (
     child.stdin.end(); 
 }));
 
-app.post('/start', (
+app.all('/start', (
   function (req, res) { 
     console.log(''+req.url);  
     var psscript = require.resolve("./start-vlab.ps1"); 
