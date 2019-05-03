@@ -38,7 +38,7 @@ $result=get-vapp $vApp | remove-vApp -confirm:$false
 
 # remove datastore if mounted for authoring
 Write-Host "Removing Datastore."
-$result=Get-Datastore -Name $vApp.Name | remove-datastore -confirm:$false
+$result=Get-Datastore | where {$_.Name -eq "$vApp"} | remove-datastore -confirm:$false
 
 # dismount the volume
 $result=get-ncvol $vApp | dismount-ncvol 

@@ -41,9 +41,10 @@ $result=invoke-command -session $session -scriptblock {
 
     # Output in HTML format
     $output="<table>"
-    $output+="<tr><td width=180px><u>Name</u></td><td></td><td><u>Description</u></td></tr>"
+    $output+="<tr><td width=10> </td><td width=180px><u>Name</u></td><td></td><td><u>Description</u></td></tr>"
     foreach($lab in $labs){
-        $output+='<tr><td><a href="/item?'+$lab+'">'+$lab+'</a></td>'      
+        $output+="<tr><td > </td>"
+        $output+='<td><a href="/item?'+$lab+'">'+$lab+'</a></td>'      
         $output+="<td></td><td>"    
         $output+=$descriptions[$lab.Name]
         $output+="</td></tr>"

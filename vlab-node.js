@@ -18,7 +18,7 @@ app.get('/', (
     res.write(''+navbar);
     res.write('<b>'+pgtitle+':</b><hr><br>');
 
-    console.log("spawning "+psscript);
+    console.log(":: "+psscript);
     var spawn = require("child_process").spawn,child;
     child = spawn("powershell.exe",[psscript],{ cwd: process.cwd(), detached: false });
     child.stdout.on("data",function(data){res.write(""+data)});
@@ -37,7 +37,7 @@ app.get('/catalog', (
     res.write(''+navbar);
     res.write('<b>'+pgtitle+':</b><hr><br>');
 
-    console.log("spawning "+psscript);
+    console.log(":: "+psscript);
     var spawn = require("child_process").spawn,child;
     child = spawn("powershell.exe",[psscript],{ cwd: process.cwd(), detached: false });
     child.stdout.on("data",function(data){res.write(""+data)});
@@ -59,7 +59,7 @@ app.get('/instances', (
     res.write(''+navbar);
     res.write('<b>'+pgtitle+':</b><hr><br>');
 
-    console.log("spawning "+psscript);
+    console.log(":: "+psscript);
     var spawn = require("child_process").spawn,child;
     child = spawn("powershell.exe",[psscript],{ cwd: process.cwd(), detached: false });
     child.stdout.on("data",function(data){res.write(""+data)});
@@ -79,7 +79,7 @@ app.get('/admin', (
     res.write(''+navbar);
     res.write('<b>'+pgtitle+':</b><hr><br>');
 
-    console.log("spawning "+psscript);
+    console.log(":: "+psscript);
     var spawn = require("child_process").spawn,child;
     child = spawn("powershell.exe",[psscript],{ cwd: process.cwd(), detached: false });
     child.stdout.on("data",function(data){res.write(""+data)});
@@ -100,12 +100,12 @@ app.get('/item', (
     res.write(''+navbar);
     res.write('<b>'+pgtitle+':</b><hr><br>');
 
+    console.log(":: "+psscript);
     var spawn = require("child_process").spawn,child;
     child = spawn("powershell.exe",[psscript,url.query],{ cwd: process.cwd(), detached: false });
     child.stdout.on("data",function(data){res.write(""+data)});
     child.stderr.on("data",function(data){console.log(""+data)});
     child.on("exit",function(){
-      console.log("Script finished");
       res.write('<hr>');
       res.write('<form method="post" action="/provision?'+url.query+'">');
       res.write('<button type="submit">Provision</button><hr>');
@@ -128,12 +128,12 @@ app.get('/instance', (
     res.write(''+navbar);
     res.write('<b>'+pgtitle+':</b><hr><br>');
 
+    console.log(":: "+psscript);
     var spawn = require("child_process").spawn,child;
     child = spawn("powershell.exe",[psscript,url.query],{ cwd: process.cwd(), detached: false });
     child.stdout.on("data",function(data){res.write(""+data)});
     child.stderr.on("data",function(data){console.log(""+data)});
     child.on("exit",function(){
-      console.log("Script finished");
       res.write('<hr>');
       res.write('<form method="post" action="/start?'+url.query+'">');
       res.write('<button type="submit">Start</button> ');
@@ -158,7 +158,7 @@ app.get('/config', (
     res.write(''+navbar);
     res.write('<b>'+pgtitle+':</b><hr><br>');
 
-    console.log("spawning "+psscript);
+    console.log(":: "+psscript);
     var spawn = require("child_process").spawn,child;
     child = spawn("powershell.exe",[psscript],{ cwd: process.cwd(), detached: false });
     child.stdout.on("data",function(data){res.write(""+data)});
@@ -188,7 +188,7 @@ app.post('/provision', (
     child.stderr.on("data",function(data){console.log(""+data)});
     child.on("exit",function(){
       console.log("Script finished");
-      res.write('<script type="text/javascript">javascript:window.location.href(history.go(-1));</script>');
+      res.write('<script type="text/javascript">javascript:window.location=document.referrer;</script>');
       res.end('Done.');
     });
     child.stdin.end(); 
@@ -215,7 +215,8 @@ app.post('/start', (
     child.stderr.on("data",function(data){console.log(""+data)});
     child.on("exit",function(){
       console.log("Script finished");
-      res.write('<script type="text/javascript">window.location = "/instance?'+url.query+'";</script>');
+      //res.write('<script type="text/javascript">window.location = "/instance?'+url.query+'";</script>');
+      res.write('<script type="text/javascript">javascript:window.location=document.referrer;</script>');
       res.end('Done.');
     });
     child.stdin.end(); 
@@ -242,7 +243,8 @@ app.post('/stop', (
     child.stderr.on("data",function(data){console.log(""+data)});
     child.on("exit",function(){
       console.log("Script finished");
-      res.write('<script type="text/javascript">window.location = "/instance?'+url.query+'";</script>');
+     // res.write('<script type="text/javascript">window.location = "/instance?'+url.query+'";</script>');
+      res.write('<script type="text/javascript">javascript:window.location=document.referrer;</script>');
       res.end('Done.');
     });
     child.stdin.end(); 
@@ -269,7 +271,8 @@ app.post('/kill', (
     child.stderr.on("data",function(data){console.log(""+data)});
     child.on("exit",function(){
       console.log("Script finished");
-      res.write('<script type="text/javascript">window.location = "/instance?'+url.query+'";</script>');
+      //res.write('<script type="text/javascript">window.location = "/instance?'+url.query+'";</script>');
+      res.write('<script type="text/javascript">javascript:window.location=document.referrer;</script>');
       res.end('Done.');
     });
     child.stdin.end(); 
@@ -315,7 +318,7 @@ console.log("process.argv:"+process.argv);
 setTimeout(function () { 
   var psscript = require.resolve("./get-vlabstats.ps1"); 
 
-  console.log("spawning "+psscript);
+  console.log(":: "+psscript);
   var spawn = require("child_process").spawn,child;
   child = spawn("powershell.exe",[psscript],{ cwd: process.cwd(), detached: true });
 }, 1000);
@@ -324,7 +327,7 @@ setTimeout(function () {
 setInterval(function () { 
   var psscript = require.resolve("./get-vlabstats.ps1"); 
 
-  console.log("spawning "+psscript);
+  console.log(":: "+psscript);
   var spawn = require("child_process").spawn,child;
   child = spawn("powershell.exe",[psscript],{ cwd: process.cwd(), detached: true });
 }, 60000);
