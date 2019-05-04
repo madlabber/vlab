@@ -32,18 +32,18 @@ $result=invoke-command -session $session -scriptblock {
     # Build the output in HTML
     $output='<form action="" method="post"><table>'
     $output+="  <tr>"
-    $output+="    <td width=10></td>" 
-    $output+="    <td><u>Name</u></td>"
-    $output+="    <td><u>Description</u></td>"     
-    $output+="    <td><u>Status</u></td>" 
-    $output+="    <td align=left><u>Controls</u></td>"
-    $output+="    <td align=left><u>Session</u></td>"
+    $output+="    <td width=10px align=right></td>" 
+    $output+="    <td width=20%  align=left ><u>Name</u></td>"
+    $output+="    <td width=50%             ><u>Description</u></td>"     
+    $output+="    <td width=7%              ><u>Status</u></td>" 
+    $output+="    <td width=15%  align=left ><u>Controls</u></td>"
+    $output+="    <td            align=left ><u>Session</u></td>"
  
     $output+="  </tr>"
     foreach($instance in $instances){
       $output+="<tr>" 
       if ( $powerstate[$instance.name] -eq "Started"){
-          $output+="  <td valign=top><font color=green>&#9864</font></td>"        
+          $output+="  <td valign=top align=right><font color=green>&#9864</font></td>"        
       }
       else {
           $output+="  <td></td>"        

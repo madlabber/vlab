@@ -41,13 +41,17 @@ $result=invoke-command -session $session -scriptblock {
 
     # Output in HTML format
     $output="<table>"
-    $output+="<tr><td width=10></td><td><u>Name</u></td><td width=5></td><td><u>Description</u></td></tr>"
+    $output+="  <tr>"
+    $output+="    <td width=3% align=left ></td>" 
+    $output+="    <td width=20%  align=left ><u>Name</u></td>"
+    $output+="    <td width=50%  align=left ><u>Description</u></td>"      
+    $output+="  </tr>"
     foreach($lab in $labs){
-        $output+="<tr><td ></td>"
-        $output+='<td nowrap valign="top"><a href="/item?'+$lab+'">'+$lab+'</a></td>'      
-        $output+="<td></td><td>"    
-        $output+=$descriptions[$lab.Name]
-        $output+="</td></tr>"
+        $output+="<tr>"
+        $output+="  <td></td>"
+        $output+='  <td nowrap valign="top"><a href="/item?'+$lab+'">'+$lab+'</a></td>'      
+        $output+="  <td>$($descriptions[$lab.Name])</td>"
+        $output+="</tr>"
     }
     $output+="</table>"
     $output | Write-Host

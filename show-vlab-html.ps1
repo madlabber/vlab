@@ -42,6 +42,7 @@ $result=invoke-command -session $session -scriptblock {
     $parent=$labvol.VolumeCloneAttributes.VolumeCloneParentAttributes.Name 
     if ( ! $parent ) { $parent=$CURRENTVLAB}
 
+    # info table
     Write-Host "<table>"
     Write-Host "<tr><td><b>Name:</b></td><td> $CURRENTVLAB </td></tr>"
     Write-Host "<tr><td><b>Description:</b></td><td> $($descriptions[$parent]) </td></tr>"
@@ -65,32 +66,39 @@ $result=invoke-command -session $session -scriptblock {
     Write-Host "</table><br>"
 
     # Virtual Machines table
-    Write-Host "<table><tr><td valign=top width=40%>"
-    Write-Host "<b>Virtual Machines:</b><hr>"
-    Write-Host "<table>"
-    Write-Host "<tr><td><u>Name</u></td><td><u>PowerState</u></td><td><u>vCPUs</u></td><td><u>MemoryGB</u></td></tr>"
+    Write-Host "<table style=`"display: inline-block;`"><tr><td valign=top>"
+    Write-Host   "<table style=`"display: inline-block;`" valign=top><tr><td valign=top>"
+    Write-Host     "<b>Virtual Machines:</b><hr>"
+    Write-Host     "<table style=`"display: inline-block;`">"
+    Write-Host       "<tr><td valign=top><u>Name</u></td><td><u>PowerState</u></td><td><u>CPUs</u></td><td><u>Ram(GB)</u></td></tr>"
     $vms=$vApp | get-vm | sort Name 
     $sumMemoryGB=0
     $sumCPUs=0
     foreach ($vm in $vms) {
-        Write-Host "<tr>"
-        Write-Host "<td width=120px>"$vm.Name"</td>"
-        Write-Host "<td>"$vm.PowerState"</td>"
-        Write-Host "<td align=center> "$vm.NumCpu"</td>"
-        Write-Host "<td> "$vm.MemoryGB"</td>"
-        Write-Host "</tr>"
+        Write-Host   "<tr>"
+        Write-Host     "<td width=120px>"$vm.Name"</td>"
+        Write-Host     "<td>"$vm.PowerState"</td>"
+        Write-Host     "<td align=center> "$vm.NumCpu"</td>"
+        Write-Host     "<td> "$vm.MemoryGB"</td>"
+        Write-Host   "</tr>"
         $sumMemoryGB+=$vm.MemoryGB
         $sumCPUs+=$vm.NumCpu
     }
-    Write-Host "<tr><td width=120px><b>Total:</b></td><td></td><td align=center><b>$sumCPUs</b></td><td><b>$sumMemoryGB</b></td></tr>"
-    Write-Host "</table>"
+    Write-Host        "<tr><td width=120px><b>Total:</b></td><td></td><td align=center><b>$sumCPUs</b></td><td><b>$sumMemoryGB</b></td></tr>"
+    Write-Host      "</table>"
+    Write-Host   "</tr></td></table>"
 
     # Lab Topology Diagram
-    Write-Host "</td><td width=10px></td><td  valign=top>"
+   # Write-Host "</td><td valign=top>"
     $diagram="$parent`.jpg"
-    if ( Test-Path "$ScriptDirectory\cmdb\$diagram" -PathType Leaf ){
-    Write-Host "<b>Topology:</b><hr>"
-    Write-Host "<img src=$diagram alt=lab_diagram width=500>"}
+    if ( Test-Path "$ScriptDirectory\cmdb\$diagram" -PathType Leaf ) {
+      Write-Host    "<table style=`"display: inline-block;`">"
+      Write-Host       "<tr><td valign=top><b>Topology:</b><hr></td></tr>"
+      Write-Host       "<tr><td><img style=`"width: 600px;max-width: 100%;height: auto;`" src=$diagram alt=lab_diagram></td></tr>"
+      Write-Host    "</table>"
+    Write-Host   "</tr></td></table>"
+
+    }
     Write-Host "</td></tr></table>"
 } -ArgumentList $CURRENTVLAB,$ScriptDirectory
 

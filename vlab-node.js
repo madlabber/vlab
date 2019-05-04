@@ -99,6 +99,7 @@ app.get('/item', (
     res.on('error', function(data){console.log(""+data)});
 
     res.writeHead(200, {'Content-Type': 'text/html'});
+    res.write('<head><meta name="viewport" content="width=device-width, initial-scale=1"></head>');
     res.write(''+navbar);
     res.write('<b>'+pgtitle+':</b><hr><br>');
 
