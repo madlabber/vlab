@@ -1,6 +1,8 @@
 # Keep a session to maintain state
+$session=""
 $session=get-pssession -ComputerName "localhost" -Name "node-vlab" | where { $_.State -eq "Disconnected" } | where { $_.Availability -eq "none" } | select-object -first 1
-if ($session) { $result=$session | connect-pssession }
+if ($session) { 
+    $result=$session | connect-pssession }
 else { 
     $session=new-pssession -ComputerName "localhost" -Name "node-vlab" 
     $result=$session | connect-pssession

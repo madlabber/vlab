@@ -1,3 +1,5 @@
+process.chdir(__dirname) //required when running as a service
+
 const express = require('express');
 const app=express();
 const port = 8080
@@ -78,6 +80,7 @@ app.get('/admin', (
     res.on('error', function(data){console.log(""+data)});
 
     res.writeHead(200, {'Content-Type': 'text/html'});
+    res.write('<head><meta name="viewport" content="width=device-width, initial-scale=1"></head>');
     res.write(''+navbar);
     res.write('<b>'+pgtitle+':</b><hr><br>');
 
@@ -158,6 +161,7 @@ app.get('/config', (
     res.on('error', function(data){console.log(""+data)});
 
     res.writeHead(200, {'Content-Type': 'text/html'});
+    res.write('<head><meta name="viewport" content="width=device-width, initial-scale=1"></head>');
     res.write(''+navbar);
     res.write('<b>'+pgtitle+':</b><hr><br>');
 
@@ -179,6 +183,7 @@ app.post('/provision', (
     res.on('error', function(data){console.log(""+data)});
 
     res.writeHead(200, {'Content-Type': 'text/html'});
+    res.write('<head><meta name="viewport" content="width=device-width, initial-scale=1"></head>');
     res.write(''+navbar);
     res.write('<b>'+pgtitle+'</b><hr><br>');
 
@@ -206,6 +211,7 @@ app.all('/start', (
     res.on('error', function(data){console.log(""+data)});
 
     res.writeHead(200, {'Content-Type': 'text/html'});
+    res.write('<head><meta name="viewport" content="width=device-width, initial-scale=1"></head>');
     res.write(''+navbar);
     res.write('<b>'+pgtitle+'</b><hr><br>');
 
@@ -234,6 +240,7 @@ app.post('/stop', (
     res.on('error', function(data){console.log(""+data)});
 
     res.writeHead(200, {'Content-Type': 'text/html'});
+    res.write('<head><meta name="viewport" content="width=device-width, initial-scale=1"></head>');
     res.write(''+navbar);
     res.write('<b>'+pgtitle+'</b><hr><br>');
 
@@ -262,6 +269,7 @@ app.post('/kill', (
     res.on('error', function(data){console.log(""+data)});
 
     res.writeHead(200, {'Content-Type': 'text/html'});
+    res.write('<head><meta name="viewport" content="width=device-width, initial-scale=1"></head>');
     res.write(''+navbar);
     res.write('<b>'+pgtitle+'</b><hr><br>');
 
@@ -290,6 +298,7 @@ app.post('/destroy', (
     res.on('error', function(data){console.log(""+data)});
 
     res.writeHead(200, {'Content-Type': 'text/html'});
+    res.write('<head><meta name="viewport" content="width=device-width, initial-scale=1"></head>');
     res.write(''+navbar);
     res.write('<b>'+pgtitle+'</b><hr><br>');
 
