@@ -34,7 +34,7 @@ $result=invoke-command -session $session -scriptblock {
     $output+="  <tr>"
     $output+="    <td width=10px align=right></td>" 
     $output+="    <td width=20%  align=left ><u>Name</u></td>"
-    $output+="    <td width=50%             ><u>Description</u></td>"     
+    $output+="    <td width=45%             ><u>Description</u></td>"     
     $output+="    <td width=7%              ><u>Status</u></td>" 
     $output+="    <td width=15%  align=left ><u>Controls</u></td>"
     $output+="    <td            align=left ><u>Session</u></td>"
@@ -53,7 +53,7 @@ $result=invoke-command -session $session -scriptblock {
       $output+="  <td valign=top>"+$descriptions[$instance.VolumeCloneAttributes.VolumeCloneParentAttributes.Name]+"</td>"       
       $output+="  <td valign=top>"+$powerstate[$instance.Name]+"</td>" 
       #Action buttons:
-      $output+="    <td>"
+      $output+="    <td nowrap>"
     # $output+="      <input type=button value=Start onclick=`"window.open('$starturl')`"/>"
       $output+="      <button type=`"submit`" formaction=`"/start?$($instance.name)`">Start</button>"
       $output+="      <button type=`"submit`" formaction=`"/stop?$($instance.name)`">Stop</button>"
