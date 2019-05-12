@@ -1,8 +1,14 @@
 # vlab
 
-requires express.
+Requires Powershell 5.1
+Requires PowerCLI Core
+Requires nonde.js
+Requires nodemon
+Requires express
+Requires Myrtille
 
-npm install express -g
+cd C:\vlab
+npm install express -save
 npm install nodemon -g
 
 Start a powershell menu

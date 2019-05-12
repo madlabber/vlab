@@ -19,7 +19,7 @@ $result=invoke-command -session $session -scriptblock {
     # Manage the refresh timer
     $refresh=$false
     if(!$timer){$timer = [System.Diagnostics.Stopwatch]::StartNew()}
-    if($timer.elapsed.minutes -ge 5){$refresh=$true}
+    if($timer.elapsed.minutes -ge 1){$refresh=$true}
     if(!$VMHosts){$refresh=$true}
 
     # Gather data

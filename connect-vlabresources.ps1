@@ -21,10 +21,15 @@ $conf=. "$ScriptDirectory\get-vlabsettings.ps1"
   }
 	
   # VMware PowerCLI Snap-in
-  if ( ! $defaultVIServer ){
-	if ( (Get-PSSnapin -Name VMware.VimAutomation.Core -ErrorAction SilentlyContinue) -eq $null ){
-		Add-PSSnapin VMware.VimAutomation.Core
-	}
+ #  if ( ! $defaultVIServer ){
+	# if ( (Get-PSSnapin -Name VMware.VimAutomation.Core -ErrorAction SilentlyContinue) -eq $null ){
+	# 	Add-PSSnapin VMware.VimAutomation.Core
+	# }
+ #  }
+
+  $viModule=get-module | where { $_.Name -eq "VMware.VimAutomation.Core" }
+  if ( !$viModule ) {
+     import-module VMware.VimAutomation.Core
   }
 #endregion
 
