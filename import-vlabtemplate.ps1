@@ -41,12 +41,13 @@ Write-Host "Importing $vApp"
 
 # Mount the vApp volume
 Write-Host "Mounting Volume /$VIDatastore/$vApp"
-$result=mount-ncvol -Name $vApp -JunctionPath "/$VIDatastore/$vApp"
+$result=mount-ncvol -Name $vApp -JunctionPath "/$VIDatastore/$vApp" -erroraction:SilentlyContinue
 
 # Create New vApp
 write-host "Creating vApp $vapp"
-$result=New-VApp -Name $vApp -Location (Get-Cluster $conf.VICluster)
+$result=New-VApp -Name $vApp -Location (Get-Cluster $conf.VICluster) -erroraction:SilentlyContinue
 
+$vAppNew=get-vapp -Name $vApp
 # Register all the VMs into the vApp
 Write-Host "Registering VMs"
 
@@ -64,8 +65,10 @@ $SearchResult = $dsBrowser.SearchDatastoreSubFolders($DatastorePath, $SearchSpec
 foreach($VMXFolder in $SearchResult) {
 	foreach($VMXFile in $VMXFolder.File) {
 		$vmx=$VMXFolder.FolderPath + $VMXFile.Path
-		$VM=New-VM -VMFilePath $vmx -VMHost $conf.vmwHost -ResourcePool $vApp
-		$result=move-vm $VM (Get-vApp $vApp) 		
+		$VM=New-VM -VMFilePath $vmx -VMHost $conf.vmwHost -ResourcePool $vApp -erroraction:SilentlyContinue
+		if ($VM){
+			$result=move-vm $VM $vAppNew -erroraction:SilentlyContinue 	
+		}	
 	}
 }
 
@@ -145,6 +148,7 @@ $result=Get-vApp $vApp | Get-VM | where {$_.ExtensionData.TriggeredAlarmState} |
 
 # Create an affinity rule for the vApp
 write-host "Configuring Affinity"
+$result=get-drsrule -Cluster $conf.VICluster | where { $_.Name -eq "$vApp"} | remove-drsrule -confirm:$false
 $result=New-DrsRule -Cluster $conf.VICluster -Name $vApp -KeepTogether $true -VM (get-vapp $vApp | get-vm)
 
 # Remove the stagin folder
