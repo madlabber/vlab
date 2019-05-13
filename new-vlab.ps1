@@ -56,9 +56,16 @@ if ( ! $vAppNew ) {
 # Feedback
 Write-Host "Provisioning $vAppNew from $vApp on"$conf.vmwHost
 
+$SnapshotName="master"
+$snap=get-ncsnapshot -volume "$vApp" "master"
+if (! $snap){
+	$SnapshotName=get-date -format o
+	$snap=new-ncsnapshot -volume "$vApp" "$SnapshotName"
+}
+
 # FlexClone the vApp volume
 Write-Host "..Creating Volume FlexClone /$VIDatastore/$vAppNew"
-$result=New-NcVolClone $vAppNew $vApp -JunctionPath "/$VIDatastore/$vAppNew" -ParentSnapshot master
+$result=New-NcVolClone $vAppNew $vApp -JunctionPath "/$VIDatastore/$vAppNew" -ParentSnapshot $SnapshotName
 
 # Create New vApp
 write-host "..Creating vApp $vappnew"
