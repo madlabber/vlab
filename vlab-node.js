@@ -6,7 +6,23 @@ const port = 8080
 
 var fs = require('fs');
 var path = require('path');
-var navbar = '<center><table><tr><td><center><b><h2 style="margin:0;padding:0;"">Homelab On Demand</h2></b></center></td></tr><tr><td><center><a href="/">Home</a> | <a href="/catalog">Catalog</a> | <a href="/instances">Instances</a> | <a href="/admin">Admin</a></center></td></tr></table></center><hr>';
+
+var sitename="Homelab On Demand"
+var navbar = '<center><table><tr><td><center><b><h2 style="margin:0;padding:0;"">'+sitename+'</h2></b></center></td></tr><tr><td><center><a href="/">Home</a> | <a href="/catalog">Catalog</a> | <a href="/instances">Instances</a> | <a href="/admin">Admin</a></center></td></tr></table></center><hr>';
+
+//fixme:  this is cludgy
+fs.readFile('settings.cfg', 'utf8', function(err, data) {  
+    if (err) throw err;
+    console.log(data);
+    var arr = data.split('=');
+    if (arr[0] === 'sitename'){
+      sitename=arr[1];
+      sitename=sitename.split('\n');
+      sitename=sitename[0];
+      console.log('sitename: '+sitename)
+      navbar = '<center><table><tr><td><center><b><h2 style="margin:0;padding:0;"">'+sitename+'</h2></b></center></td></tr><tr><td><center><a href="/">Home</a> | <a href="/catalog">Catalog</a> | <a href="/instances">Instances</a> | <a href="/admin">Admin</a></center></td></tr></table></center><hr>';
+    }
+});
 
 app.get('/', (
   function (req, res) { 

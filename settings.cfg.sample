@@ -1,3 +1,4 @@
+sitename=MiniLab Portal
 vCenter=192.168.0.20
 vserver=svm1
 VIDatastore=nfs_datastore
