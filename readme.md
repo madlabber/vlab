@@ -1,10 +1,10 @@
 # vlab
-An automation framework and web portal for provisioning virtual lab/test/dev environments on an environment with ONTAP and vSphere.
+An automation framework and web portal for provisioning virtual lab/test/dev environments on top of VMware vSphere and NetApp ONTAP9.
 
 ## Requires: 
 - Powershell 5.1
 - PowerCLI Core
-- nonde.js
+- node.js
 - nodemon
 - express
 - Myrtille
