@@ -42,6 +42,9 @@ $result=invoke-command -session $session -scriptblock {
     $parent=$labvol.VolumeCloneAttributes.VolumeCloneParentAttributes.Name 
     if ( ! $parent ) { $parent=$CURRENTVLAB}
 
+    # Get the default password hash
+    $passwordhash=$(Invoke-WebRequest -URI http://localhost/myrtille/GetHash.aspx?password=P@ssw0rd).content
+
     # info table
     Write-Host "<table>"
     Write-Host "<tr><td><b>Name:</b></td><td> $CURRENTVLAB </td></tr>"
@@ -56,7 +59,8 @@ $result=invoke-command -session $session -scriptblock {
         $rdpurl+="&server=$wanip"
         $rdpurl+="&domain=$($conf.rdpdomain)"
         $rdpurl+="&user=$($conf.rdpuser)"
-        $rdpurl+="&passwordHash=$($conf.passwordhash)"
+        #$rdpurl+="&passwordHash=$($conf.passwordhash)"
+        $rdpurl+="&passwordHash=$passwordhash"
         $rdpurl+="&connect=Connect%21"
         $row='<tr><td><b>Browser:</b></td><td><a href="'
         $row+="$rdpurl"

@@ -11,38 +11,47 @@
 
 # Must be run in an administrator session 
 if (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
-   write-Warning "Installation requires administrator priviledges.  Run from an administrator powershell session."     
-   break
+    write-error "Installation requires administrator priviledges.  Run from an administrator powershell session."     
+    break
 }
 # Verify Powershell Version
+if (  $psversiontable.PSVersion.Major -lt 5 ){
+    write-error "Minimum supported Powershell version is 5.1"
+    break
+}
 
+# Install PSTK (Manual step)
+if ( $(get-module -listavailable | where { $_.Name -eq "DataONTAP" }).count -eq 0 ){
+    write-error "The NetApp Powershell Toolkit (PSTK) is required."
+    write-error "The PSTK is available from the toolchest area support.netapp.com"
+    break
+}
 
-#Install PowerCLI
+# Install PowerCLI
 Install-Module -Name VMware.PowerCLI
 
-#Configure Powershell unrestricted execution policy
+# Configure Powershell unrestricted execution policy
 set-executionpolicy unrestricted
 
-#Configure PowerCLI ignore certs
+# Configure PowerCLI ignore certs
 Set-PowerCLIConfiguration -scope AllUsers -InvalidCertificateAction Ignore -confirm:$false
 
-#Configure PowerCLI not to show deprecation warnings
+# Configure PowerCLI not to show deprecation warnings
 Set-PowerCLIConfiguration -scope AllUsers -DisplayDeprecationWarnings $false -confirm:$false
 
-#Configure PowerCLI CIP option
+# Configure PowerCLI CIP option
 Set-PowerCLIConfiguration -Scope AllUsers -ParticipateInCEIP $false -confirm:$false
 
-#Configure Default vServer mode
+# Configure Default vServer mode
 Set-PowerCLIConfiguration -Scope AllUsers -DefaultVIServerMode Multiple -confirm:$false
 
-#configure iis for myrtille:
+# Configure iis for myrtille:
 $IISFeatures = "Web-Server","Web-WebServer","Web-Common-Http","Web-Default-Doc","Web-Dir-Browsing","Web-Http-Errors","Web-Static-Content","Web-Health","Web-Http-Logging","Web-Performance","Web-Stat-Compression","Web-Security","Web-Filtering","Web-App-Dev","Web-Net-Ext45","Web-Asp-Net45","Web-ISAPI-Ext","Web-ISAPI-Filter","Web-WebSockets","Web-Mgmt-Tools","Web-Mgmt-Console"
 Install-WindowsFeature -Name $IISFeatures
 
 # Create a directory for downloaded bits
 If(!(Test-Path "$PSScriptRoot")) { New-Item -Path "$PSScriptRoot" -Name "setup" -ItemType "directory" }
 
-# Install PSTK (Manual step)
 # Install Node.js
 $nodejs_url = "https://nodejs.org/dist/v10.15.3/node-v10.15.3-x64.msi"
 $nodejs_exe = "$PSScriptRoot\setup\node-v10.15.3-x64.msi"
@@ -79,7 +88,6 @@ Start-Process "$myrtille_exe" "-y" -Wait
 write-host
 Write-host "Installing Myrtille"
 Start-Process "$myrtille_msi" -Wait
-
 
 #retreive myrtille password hash
 #  https://localhost/myrtille/GetHash.aspx?password=P@ssw0rd

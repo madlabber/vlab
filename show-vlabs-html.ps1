@@ -29,6 +29,8 @@ $result=invoke-command -session $session -scriptblock {
     #$labs=$vols | where { $_.Name -like "lab_*" } | where { ! $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name } | sort
     $instances=$vols | where { $_.Name -like "lab_*" } | where { $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name } | sort
 
+    $passwordhash=$(Invoke-WebRequest -URI http://localhost/myrtille/GetHash.aspx?password=P@ssw0rd).content
+
     # Build the output in HTML
     $output='<form action="" method="post"><table>'
     $output+="  <tr>"
@@ -70,7 +72,8 @@ $result=invoke-command -session $session -scriptblock {
             $rdpurl+="&server=$wanip"
             $rdpurl+="&domain=$($conf.rdpdomain)"
             $rdpurl+="&user=$($conf.rdpuser)"
-            $rdpurl+="&passwordHash=$($conf.passwordhash)"
+            #$rdpurl+="&passwordHash=$($conf.passwordhash)"
+            $rdpurl+="&passwordHash=$passwordhash"
             $rdpurl+="&connect=Connect%21"
         }
       }
