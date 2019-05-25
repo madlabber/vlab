@@ -1,3 +1,4 @@
 *.clixml
 *.cfg
 node_modules/
+setup/
