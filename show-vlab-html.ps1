@@ -12,7 +12,7 @@ Param(
     [Parameter(Position=1)][string]$CURRENTVLAB
 )
 
-$ScriptDirectory = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
+#$ScriptDirectory = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
 
 $session=.\get-vlabsession.ps1
 $result=invoke-command -session $session -scriptblock { 
@@ -104,12 +104,9 @@ $result=invoke-command -session $session -scriptblock {
 
     }
     Write-Host "</td></tr></table>"
-} -ArgumentList $CURRENTVLAB,$ScriptDirectory
+} -ArgumentList $CURRENTVLAB,$psscriptroot
 
 $result=disconnect-pssession -Name "node-vlab" -IdleTimeoutSec 3600 -WarningAction silentlyContinue
 
 #This keeps the powershell process from ending before all of the output has reached the node.js front end.
 start-sleep -Milliseconds 50
-
-#}
-

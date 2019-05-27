@@ -7,24 +7,56 @@ const port = 8080
 var fs = require('fs');
 var path = require('path');
 
-var sitename="Homelab On Demand"
 var navbar = '<center><table><tr><td><center><b><h2 style="margin:0;padding:0;"">'+sitename+'</h2></b></center></td></tr><tr><td><center><a href="/">Home</a> | <a href="/catalog">Catalog</a> | <a href="/instances">Instances</a> | <a href="/admin">Admin</a></center></td></tr></table></center><hr>';
 
+//Variables expected in the settings.cfg file
+var sitename="Homelab On Demand"
+var vCenter="192.168.1.10"
+var vserver="vserver"
+var cluster_mgmt="192.168.1.20"
+var VIDatastore="Datastore"
+var VIPortgroup="Portgroup1"
+var VICluster="Cluster"
+var newID=10
+var vswitch="vSwitch1"
+var vlanbase=1000
+var autostart=false
+var rdphost="http://192.168.1.30"
+var rdpdomain="lab"
+var rdpuser="administrator"
+var rdppassword="P@ssw0rd"
+
+// Default Navbar
+var navbar = '<center><table><tr><td><center><b><h2 style="margin:0;padding:0;"">'+sitename+'</h2></b></center></td></tr><tr><td><center><a href="/">Home</a> | <a href="/catalog">Catalog</a> | <a href="/instances">Instances</a> | <a href="/admin">Admin</a></center></td></tr></table></center><hr>';
+
+//Load the settings.cfg file
 fs.readFile('settings.cfg', 'utf8', function(err, data) {  
     if (err) throw err;
-    console.log(data);
-    //var lines = data.split('\n');
+
     data.split('\n').forEach(function(line){
       var kv = line.split('=');
       var key = kv[0];
       var value = kv[1];
-      //console.log(''+key+": "+value);
 
       if (key === 'sitename'){
         sitename=value;
-        console.log('sitename: '+sitename)
         navbar = '<center><table><tr><td><center><b><h2 style="margin:0;padding:0;"">'+sitename+'</h2></b></center></td></tr><tr><td><center><a href="/">Home</a> | <a href="/catalog">Catalog</a> | <a href="/instances">Instances</a> | <a href="/admin">Admin</a></center></td></tr></table></center><hr>';
       }
+      if (key === 'vCenter'){ vCenter=value;}
+      if (key === 'vserver'){ vserver=value;}
+      if (key === 'cluster_mgmt'){ cluster_mgmt=value;}
+      if (key === 'VIDatastore'){ VIDatastore=value;}
+      if (key === 'VIPortgroup'){ VIPortgroup=value;}
+      if (key === 'VICluster'){ VICluster=value;}
+      if (key === 'newID'){ newID=value;}
+      if (key === 'vswitch'){ vswitch=value;}
+      if (key === 'vlanbase'){ vlanbase=value;}
+      if (key === 'autostart'){ autostart=value;}
+      if (key === 'rdphost'){ rdphost=value;}
+      if (key === 'rdpdomain'){ rdpdomain=value;}
+      if (key === 'rdpuser'){ rdpuser=value;}
+      if (key === 'rdppassword'){ rdppassword=value;}
+
     });    
 });
 
@@ -95,22 +127,18 @@ app.get('/instances', (
 app.get('/admin', (
   function (req, res) { 
     console.log(''+req.url);  
-    var psscript = require.resolve("./show-adminmenu-html.ps1"); 
     var pgtitle = "Lab Administration";
     res.on('error', function(data){console.log(""+data)});
 
     res.writeHead(200, {'Content-Type': 'text/html'});
     res.write('<head><meta name="viewport" content="width=device-width, initial-scale=1"></head>');
     res.write(''+navbar);
-    res.write('<b>'+pgtitle+':</b><hr><br>');
+    res.write('<b>'+pgtitle+':</b><hr>');
+    res.write('<br><a href=/config>Configuration Settings</a>');
+    res.write('<br><br><a href=https://'+vCenter+' target=_blank>VMware vCenter</a>');
+    res.write('<br><br><a href=https://'+cluster_mgmt+' target=_blank>ONTAP System Manager</a>');
+    res.end('<br><br><hr>:<hr>');
 
-    console.log(":: "+psscript);
-    var spawn = require("child_process").spawn,child;
-    child = spawn("powershell.exe",[psscript],{ cwd: process.cwd(), detached: false });
-    child.stdout.on("data",function(data){res.write(""+data)});
-    child.stderr.on("data",function(data){console.log(""+data)});
-    child.on("exit",function(){ res.end('<br><hr>:<hr>') });
-    child.stdin.end();
 }));
 
 app.get('/item', (
@@ -176,22 +204,32 @@ app.get('/instance', (
 app.get('/config', (
   function (req, res) { 
     console.log(''+req.url);  
-    var psscript = require.resolve("./show-vlabsettings-html.ps1"); 
     var pgtitle = "Configuration Settings";
     res.on('error', function(data){console.log(""+data)});
 
     res.writeHead(200, {'Content-Type': 'text/html'});
     res.write('<head><meta name="viewport" content="width=device-width, initial-scale=1"></head>');
     res.write(''+navbar);
-    res.write('<b>'+pgtitle+':</b><hr><br>');
+    res.write('<b>'+pgtitle+':</b><hr>');
+    res.write('<table>');
+    res.write('<tr><td><u>Option</u> </td><td><u>Value</u></td></tr>');
+    res.write('<tr><td>sitename:     </td><td>'+sitename+'</td></tr>');
+    res.write('<tr><td>vCenter:      </td><td>'+vCenter+'</td></tr>');
+    res.write('<tr><td>cluster_mgmt: </td><td>'+cluster_mgmt+'</td></tr>');
+    res.write('<tr><td>VIDatastore:  </td><td>'+VIDatastore+'</td></tr>');
+    res.write('<tr><td>VIPortgroup:  </td><td>'+VIPortgroup+'</td></tr>');
+    res.write('<tr><td>VICluster:    </td><td>'+VICluster+'</td></tr>');
+    res.write('<tr><td>newID:        </td><td>'+newID+'</td></tr>');
+    res.write('<tr><td>vswitch:      </td><td>'+vswitch+'</td></tr>');
+    res.write('<tr><td>vlanbase:     </td><td>'+vlanbase+'</td></tr>');
+    res.write('<tr><td>autostart:    </td><td>'+autostart+'</td></tr>');
+    res.write('<tr><td>rdphost:      </td><td>'+rdphost+'</td></tr>');
+    res.write('<tr><td>rdpdomain:    </td><td>'+rdpdomain+'</td></tr>');
+    res.write('<tr><td>rdpuser:      </td><td>'+rdpuser+'</td></tr>');
+    res.write('<tr><td>rdppassword:  </td><td>'+rdppassword+'</td></tr>');
+    res.write('</table><br>');
+    res.end('<br><hr>:<hr>');
 
-    console.log(":: "+psscript);
-    var spawn = require("child_process").spawn,child;
-    child = spawn("powershell.exe",[psscript],{ cwd: process.cwd(), detached: false });
-    child.stdout.on("data",function(data){res.write(""+data)});
-    child.stderr.on("data",function(data){console.log(""+data)});
-    child.on("exit",function(){ res.end('<br><hr>:<hr>') });
-    child.stdin.end(); 
 }));
 
 app.post('/provision', (
