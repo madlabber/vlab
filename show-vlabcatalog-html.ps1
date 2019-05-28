@@ -9,8 +9,6 @@
 
 #>
 
-$ScriptDirectory = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
-
 $session=.\get-vlabsession.ps1
 $result=invoke-command -session $session -scriptblock { 
     param($ScriptDirectory)
@@ -55,7 +53,7 @@ $result=invoke-command -session $session -scriptblock {
     }
     $output+="</table>"
     $output | Write-Host
-} -ArgumentList $ScriptDirectory
+} -ArgumentList $psscriptroot
 
 $result=disconnect-pssession -Name "node-vlab" -IdleTimeoutSec 3600 -WarningAction silentlyContinue
 

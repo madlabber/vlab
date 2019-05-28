@@ -15,37 +15,43 @@ Param(
   [Parameter(Mandatory=$True,Position=1)][string]$vApp
 )
 
-$ScriptDirectory = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
-$conf=. "$ScriptDirectory\get-vlabsettings.ps1"
-& "$ScriptDirectory\Connect-vLabResources.ps1"
-	
-#get-vapp $vApp | get-vm | start-vm
-#Mounting a subfolder as a datastore
-$datastore=$conf.VIDatastore
-$cluster=get-cluster $conf.VICluster
-$vlab=$vApp
-$remotepath=$(get-datastore $datastore).RemotePath
-$remotehost=$(get-datastore $datastore).RemoteHost
 
-# this is the command that mounted it
-#get-cluster $conf.VICluster | get-vmhost | foreach {new-datastore -VMHost $_.Name -Name "$vlab" -Path "$remotepath/$vlab" -NfsHost $remotehost}
+$session=.\get-vlabsession.ps1
+$result=invoke-command -session $session -scriptblock { 
+    param($vApp,
+          $ScriptDirectory
+    )
 
-# First get all the VM's in that datastore
-$VMs=$cluster | get-datastore "$vlab" | get-vm
+    $conf=. "$ScriptDirectory\get-vlabsettings.ps1"
+    & "$ScriptDirectory\Connect-vLabResources.ps1"
 
-# Stop them all
-$VMs | Where { $_.PowerState -ne "PoweredOff"} | stop-vmguest 
+    # First get all the VM's in that datastore
+    $VMs=get-cluster $conf.VICluster | get-datastore "$vApp" | get-vm
 
-$running=$VMs | Where { $_.PowerState -ne "PoweredOff"}
-if ($running.count > 0){start-sleep 120}
+    # Stop them all - gracefully if possible
+    Write-Host "Stopping any running VMs in $vApp"
+    $VMs | Where { $_.PowerState -ne "PoweredOff"} | stop-vmguest 
 
-$VMs | Where { $_.PowerState -ne "PoweredOff"} | stop-vm
+    # Wait 2 minutes then kill the stragglers
+    $running=$VMs | Where { $_.PowerState -ne "PoweredOff"}    
+    if ($running.count > 0){start-sleep 120}
+    $VMs | Where { $_.PowerState -ne "PoweredOff"} | stop-vm
 
-#for now just remove them
-$result=$VMs | remove-vm -confirm:$false
+    #for now just remove them
+    write-host "Removing VMs from temporary datastore."
+    $result=$VMs | remove-vm -confirm:$false
 
-# remove the datastore
-$result=get-datastore "$vlab" | get-vmhost | remove-datastore "$vlab" -confirm:$false
+    # remove the datastore
+    write-host "Removing temporary datastore."
+    $result=get-datastore "$vApp" | get-vmhost | remove-datastore "$vApp" -confirm:$false
 
-# fixme later:
-& "$ScriptDirectory\import-vlabtemplate.ps1" "$vlab"
+    # fixme later:
+    write-host "Importing VMs from lab datastore."
+    & "$ScriptDirectory\import-vlabtemplate.ps1" "$vApp"
+
+} -ArgumentList $vApp,$psscriptroot
+
+$result=disconnect-pssession -Name "node-vlab" -IdleTimeoutSec 3600 -WarningAction silentlyContinue
+
+#This keeps the powershell process from ending before all of the output has reached the node.js front end.
+start-sleep -Milliseconds 50
