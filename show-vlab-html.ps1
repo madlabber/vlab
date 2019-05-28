@@ -12,8 +12,6 @@ Param(
     [Parameter(Position=1)][string]$CURRENTVLAB
 )
 
-#$ScriptDirectory = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
-
 $session=.\get-vlabsession.ps1
 $result=invoke-command -session $session -scriptblock { 
     param($CURRENTVLAB,

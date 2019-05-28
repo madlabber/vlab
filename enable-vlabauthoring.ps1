@@ -18,8 +18,7 @@ Param(
 $ScriptDirectory = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
 $conf=. "$ScriptDirectory\get-vlabsettings.ps1"
 & "$ScriptDirectory\Connect-vLabResources.ps1"
-	
-#get-vapp $vApp | get-vm | start-vm
+
 #Mounting a subfolder as a datastore
 $datastore=$conf.VIDatastore
 $vlab=$vApp
