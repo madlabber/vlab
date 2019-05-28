@@ -15,8 +15,7 @@ Param(
   [Parameter(Mandatory=$True,Position=1)][string]$vApp
 )
 
-$ScriptDirectory = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
-$conf=. "$ScriptDirectory\get-vlabsettings.ps1"
-& "$ScriptDirectory\Connect-vLabResources.ps1"
+$conf=. "$psscriptroot\get-vlabsettings.ps1"
+& "$psscriptroot\Connect-vLabResources.ps1"
 	
 get-vapp $vApp | get-vm | start-vm

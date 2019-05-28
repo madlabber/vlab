@@ -181,7 +181,7 @@ function menu4vLabCatalogDetail {
 			Write-Host
 			Write-Host
 			Write-Host
-			$result=.\new-vlab.ps1 $CURRENTVLAB 
+			$result=.\new-vlabclone.ps1 $CURRENTVLAB 
 			$CURRENTVLAB=$result.Name
 			menu3vLabDetail
 			$done=$true
@@ -236,7 +236,7 @@ function menu4vLabCatalogDetailAdmin {
 			Write-Host
 			Write-Host
 			Write-Host
-			$result=.\new-vlab.ps1 $CURRENTVLAB 
+			$result=.\new-vlabclone.ps1 $CURRENTVLAB 
 			$CURRENTVLAB=$result.Name
 			menu3vLabDetail
 			$done=$true

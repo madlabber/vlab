@@ -1,8 +1,8 @@
 <#
 .SYNOPSIS
-	This script start a vLab vApp
+	This script stops a vLab vApp
 .DESCRIPTION
-	This script start a vLab vApp
+	This script stops a vLab vApp
 .PARAMETER	vApp
 	Name of the vLab vApp
 .EXAMPLE
@@ -16,9 +16,8 @@ Param(
   [switch]$kill
 )
 
-$ScriptDirectory = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
-$conf=. "$ScriptDirectory\get-vlabsettings.ps1"
-& "$ScriptDirectory\Connect-vLabResources.ps1"
+$conf=. "$psscriptroot\get-vlabsettings.ps1"
+& "$psscriptroot\Connect-vLabResources.ps1"
 
 if ( $kill ){
     Write-Host "Powering off $vApp"

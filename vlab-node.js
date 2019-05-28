@@ -235,7 +235,7 @@ app.get('/config', (
 app.post('/provision', (
   function (req, res) { 
     console.log(''+req.url);  
-    var psscript = require.resolve("./new-vlab.ps1"); 
+    var psscript = require.resolve("./new-vlabclone.ps1"); 
     var pgtitle = "Provisioning instance...";
     var url = require('url').parse(req.url)
     res.on('error', function(data){console.log(""+data)});
