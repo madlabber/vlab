@@ -3,3 +3,4 @@
 node_modules/
 setup/
 cmdb/*.jpg
+package-lock.json
