@@ -32,11 +32,11 @@ $result=invoke-command -session $session -scriptblock {
         $vols=get-ncvol
         $labs=$vols | where { $_.Name -like "lab_*" } | where { ! $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name }
         $instances=$vols | where { $_.Name -like "lab_*" } | where { $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name }
-
+        #$vApps=get-vapp |  where { $_.Name -like "lab_*" } 
         # reset the timer
         $timer = [System.Diagnostics.Stopwatch]::StartNew()
     }
-
+     $vApps=get-vapp |  where { $_.Name -like "lab_*" } 
     # Output in HTML format
     $output="<table>"
     $output+="  <tr>"
@@ -45,11 +45,13 @@ $result=invoke-command -session $session -scriptblock {
     $output+="    <td width=50%  align=left ><u>Description</u></td>"      
     $output+="  </tr>"
     foreach($lab in $labs){
-        $output+="<tr>"
-        $output+="  <td></td>"
-        $output+='  <td nowrap valign="top"><a href="/item?'+$lab+'">'+$lab+'</a></td>'      
-        $output+="  <td>$($descriptions[$lab.Name])</td>"
-        $output+="</tr>"
+        if ( ($vApps | where { $_.Name -eq "$lab" }).count -gt 0){
+            $output+="<tr>"
+            $output+="  <td></td>"
+            $output+='  <td nowrap valign="top"><a href="/item?'+$lab+'">'+$lab+'</a></td>'      
+            $output+="  <td>$($descriptions[$lab.Name])</td>"
+            $output+="</tr>"
+        }
     }
     $output+="</table>"
     $output | Write-Host
