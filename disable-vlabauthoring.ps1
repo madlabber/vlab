@@ -47,7 +47,30 @@ $result=invoke-command -session $session -scriptblock {
 
     # fixme later:
     write-host "Importing VMs from lab datastore."
-    & "$ScriptDirectory\import-vlabtemplate.ps1" "$vApp"
+    #& "$ScriptDirectory\import-vlabtemplate.ps1" "$vApp"
+
+    # Search for .VMX Files in datastore
+    $ds = Get-Datastore -Name $conf.VIDatastore | %{Get-View $_.Id}
+    $SearchSpec = New-Object VMware.Vim.HostDatastoreBrowserSearchSpec
+    $SearchSpec.matchpattern = "*.vmx"
+    $dsBrowser = Get-View $ds.browser
+    $DatastorePath = "[" + $ds.Summary.Name + "]/$vApp"
+ 
+    # Find all .VMX file paths in Datastore variable and filters out .snapshot
+    $SearchResult = $dsBrowser.SearchDatastoreSubFolders($DatastorePath, $SearchSpec) | where {$_.FolderPath -notmatch ".snapshot"}
+ 
+    # Register all .VMX files with vCenter
+    foreach($VMXFolder in $SearchResult) {
+        foreach($VMXFile in $VMXFolder.File) {
+            $vmx=$VMXFolder.FolderPath + $VMXFile.Path
+            $VM=New-VM -VMFilePath $vmx -VMHost $conf.vmwHost -ResourcePool $vApp -erroraction:SilentlyContinue
+            if ($VM){
+                $result=move-vm $VM $vApp -erroraction:SilentlyContinue  
+            }   
+        }
+    }
+
+
 
 } -ArgumentList $vApp,$psscriptroot
 

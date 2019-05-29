@@ -50,7 +50,7 @@ $IISFeatures = "Web-Server","Web-WebServer","Web-Common-Http","Web-Default-Doc",
 Install-WindowsFeature -Name $IISFeatures
 
 # Create a directory for downloaded bits
-If(!(Test-Path "$PSScriptRoot")) { New-Item -Path "$PSScriptRoot" -Name "setup" -ItemType "directory" }
+If(!(Test-Path "$PSScriptRoot\setup")) { New-Item -Path "$PSScriptRoot\setup" -Name "setup" -ItemType "directory" }
 
 # Install Node.js
 $nodejs_url = "https://nodejs.org/dist/v10.15.3/node-v10.15.3-x64.msi"

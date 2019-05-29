@@ -149,8 +149,9 @@ $result=Get-vApp $vApp | Get-VM | where {$_.ExtensionData.TriggeredAlarmState} |
 # Create an affinity rule for the vApp
 write-host "Configuring Affinity"
 $result=get-drsrule -Cluster $conf.VICluster | where { $_.Name -eq "$vApp"} | remove-drsrule -confirm:$false
-$result=New-DrsRule -Cluster $conf.VICluster -Name $vApp -KeepTogether $true -VM (get-vapp $vApp | get-vm)
-
+if ( $(get-vapp $vApp | get-vm).count -gt 0){
+    $result=New-DrsRule -Cluster $conf.VICluster -Name $vApp -KeepTogether $true -VM (get-vapp $vApp | get-vm)
+}
 # Remove the stagin folder
 #$result=$viFolder | remove-folder
 
