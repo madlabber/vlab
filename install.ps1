@@ -88,14 +88,24 @@ write-host
 Write-host "Installing Myrtille"
 Start-Process "msiexec.exe" -argumentlist "/qb /l* $PSScriptRoot\setup\myrtille-log.txt /i $PSScriptRoot\setup\myrtille.msi" -Wait
 
-Write-Host "Settings credentials"
-.\set-vlabcreds.ps1
+if ( ! Test-Path "$PSScriptRoot\settings.cfg"){
+    Write-Host "Creating default settings.cfg"
+    copy "$PSScriptRoot\settings.cfg.sample" "$PSScriptRoot\settings.cfg"
+}
 
-# Copy the sample settings file
+$conf=. "$PSScriptRoot\get-vlabsettings.ps1"
+
+if ( ! Test-Path "$PSScriptRoot\vicred.clixml" ){
+    Write-Host "Enter Credentials for"$conf.vCenter 
+    $VICred = Get-Credential -message "Enter the credentials for vCenter server $($conf.vcenter)"
+    $VICred | Export-CliXml "$PSScriptRoot\vicred.clixml"
+}
+
+if ( ! Test-Path "$PSScriptRoot\nccred.clixml" ){
+    Write-Host "Enter Credentials for Cluster:"$conf.cluster_mgmt
+    $NCCred = Get-Credential -message "Enter the credentials for ONTAP Cluster $($conf.cluster_mgmt)"
+    $NCCred | Export-CliXml "$PSScriptRoot\nccred.clixml"
+}
 
 #Start the portal app
 #  nodemon c:\vlab\vlab-node.js
-
-#optional components:
-#install sublime
-#install github desktop
