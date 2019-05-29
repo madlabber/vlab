@@ -3,6 +3,7 @@ An automation framework and web portal for provisioning virtual lab/test/dev env
 
 ## Requires: 
 - Powershell 5.1
+- NetApp Powershell Toolkit (PSTK)
 - PowerCLI Core
 - node.js
 - nodemon
@@ -11,29 +12,15 @@ An automation framework and web portal for provisioning virtual lab/test/dev env
 
 ## Installation
 1. Install Powershell 5.1.
-2. Install PowerCLI
-3. Install Node.JS
-4. Install nodemon
-```
-  npm install nodemon -g
-```  
-5. Clone the repo to a local directory, i.e. C:\vlab
-6. Install express into that directory:
-```
-cd C:\vlab
-npm install express -save
-```
-7. Install Myrtille
-8. Retreive the hash value for the nested lab password from the myrtille instance by using a URL.  i.e.:
-https://server/myrtille/GetHash.aspx?password=password
-9. Copy the settings.cfg.sample file to settings.cfg, and customize it as required.
-10. Start the powershell menu
-```
-cd C:\vlab
-.\start-vlabmenu.ps1
-```
-11. In the admin menu, set credentials to save credentials for vcenter and 
-12. start the web service:
+2. Install NetApp Powershell Toolkit
+3. Clone the repo to a local directory, i.e. C:\vlab
+4. Run the ./install.ps1 script
+5. Edit the settings.cfg file to reflect your environment
+6. start the web service:
 ```
 nodemon vlab-node.js
+```
+7. Open a browser to access the portal
+```
+http://<server-address>:8081
 ```
