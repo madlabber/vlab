@@ -92,6 +92,10 @@ if ( ! Test-Path "$PSScriptRoot\settings.cfg"){
     Write-Host "Creating default settings.cfg"
     copy "$PSScriptRoot\settings.cfg.sample" "$PSScriptRoot\settings.cfg"
 }
+if ( ! Test-Path "$PSScriptRoot\cmdb\descriptions.tbl"){
+    Write-Host "Creating default descriptions.tbl"
+    copy "$PSScriptRoot\cmdb\descriptions.tbl.sample" "$PSScriptRoot\cmdb\descriptions.tbl"
+}
 
 $conf=. "$PSScriptRoot\get-vlabsettings.ps1"
 

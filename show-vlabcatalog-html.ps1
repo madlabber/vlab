@@ -36,7 +36,7 @@ $result=invoke-command -session $session -scriptblock {
         # reset the timer
         $timer = [System.Diagnostics.Stopwatch]::StartNew()
     }
-     $vApps=get-vapp |  where { $_.Name -like "lab_*" } 
+    $vApps=get-vapp |  where { $_.Name -like "lab_*" } 
     # Output in HTML format
     $output="<table>"
     $output+="  <tr>"
@@ -60,4 +60,4 @@ $result=invoke-command -session $session -scriptblock {
 $result=disconnect-pssession -Name "node-vlab" -IdleTimeoutSec 3600 -WarningAction silentlyContinue
 
 # This keeps the powershell process from ending before all of the output has reached the node.js front end.
-start-sleep -Milliseconds 50
+start-sleep -Milliseconds 100
