@@ -32,16 +32,12 @@ Install-Module -Name VMware.PowerCLI
 
 # Configure Powershell unrestricted execution policy
 set-executionpolicy unrestricted
-
+# Configure PowerCLI CEIP option
+Set-PowerCLIConfiguration -Scope AllUsers -ParticipateInCEIP $false -confirm:$false -erroraction:SilentlyContinue
 # Configure PowerCLI ignore certs
 Set-PowerCLIConfiguration -scope AllUsers -InvalidCertificateAction Ignore -confirm:$false
-
 # Configure PowerCLI not to show deprecation warnings
 Set-PowerCLIConfiguration -scope AllUsers -DisplayDeprecationWarnings $false -confirm:$false
-
-# Configure PowerCLI CIP option
-Set-PowerCLIConfiguration -Scope AllUsers -ParticipateInCEIP $false -confirm:$false
-
 # Configure Default vServer mode
 Set-PowerCLIConfiguration -Scope AllUsers -DefaultVIServerMode Multiple -confirm:$false
 
@@ -51,6 +47,9 @@ Install-WindowsFeature -Name $IISFeatures
 
 # Create a directory for downloaded bits
 If(!(Test-Path "$PSScriptRoot\setup")) { New-Item -Path "$PSScriptRoot\setup" -Name "setup" -ItemType "directory" }
+
+# TLS
+[Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
 
 # Install Node.js
 $nodejs_url = "https://nodejs.org/dist/v10.15.3/node-v10.15.3-x64.msi"
@@ -63,7 +62,7 @@ if(!(Test-Path "$nodejs_exe")){
 }
 write-host
 Write-host "Installing node.js"
-Start-Process $nodejs_exe -Wait
+Start-Process "msiexec.exe" -argumentlist "/qn /l* $PSScriptRoot\setup\node-log.txt /i $PSScriptRoot\setup\node-v10.15.3-x64.msi" -Wait
 $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User") 
 
 # npm install nodemon -g
@@ -75,7 +74,7 @@ Write-Host "Installing express."
 npm install express
 
 #Install myrtille, be sure to change the default port to 8083
-$myrtille_url = "https://github.com/cedrozor/myrtille/releases/download/v2.3.1/Myrtille_2.3.1_x86_x64_Setup.exe"
+$myrtille_url = "http://github.com/cedrozor/myrtille/releases/download/v2.3.1/Myrtille_2.3.1_x86_x64_Setup.exe"
 $myrtille_exe = "$PSScriptRoot\setup\Myrtille_2.3.1_x86_x64_Setup.exe"
 $myrtille_msi = "$PSScriptRoot\setup\Myrtille.msi"
 write-host "Downloading Myrtille."
@@ -87,7 +86,7 @@ Write-host "Extracting Myrtille"
 Start-Process "$myrtille_exe" "-y" -Wait
 write-host
 Write-host "Installing Myrtille"
-Start-Process "$myrtille_msi" -Wait
+Start-Process "msiexec.exe" -argumentlist "/qb /l* $PSScriptRoot\setup\myrtille-log.txt /i $PSScriptRoot\setup\myrtille.msi" -Wait
 
 Write-Host "Settings credentials"
 .\set-vlabcreds.ps1
