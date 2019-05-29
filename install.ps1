@@ -89,11 +89,11 @@ write-host
 Write-host "Installing Myrtille"
 Start-Process "$myrtille_msi" -Wait
 
-#retreive myrtille password hash
-#  https://localhost/myrtille/GetHash.aspx?password=P@ssw0rd
-#configure settings.cfg
-#use the menu to save creds
-#
+Write-Host "Settings credentials"
+.\set-vlabcreds.ps1
+
+# Copy the sample settings file
+
 #Start the portal app
 #  nodemon c:\vlab\vlab-node.js
 
