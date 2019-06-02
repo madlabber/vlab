@@ -22,12 +22,19 @@ if (  $psversiontable.PSVersion.Major -lt 5 ){
 
 # Install PSTK (Manual step)
 if ( $(get-module -listavailable | where { $_.Name -eq "DataONTAP" }).count -eq 0 ){
-    write-error "The NetApp Powershell Toolkit (PSTK) is required."
-    write-error "The PSTK is available from the toolchest area support.netapp.com"
-    break
+    if(!(Test-Path "C:\Windows\Temp\NetApp_PowerShell_Toolkit_9.6.0.msi" )){
+        write-error "The NetApp Powershell Toolkit (PSTK) is required."
+        write-error "The PSTK is available from the toolchest area support.netapp.com"
+        break
+    }
+    else {
+        Write-host "Installing PSTK"
+        Start-Process "msiexec.exe" -argumentlist "/qb /l* C:\Windows\Temp\pstk-log.txt /i C:\Windows\Temp\NetApp_PowerShell_Toolkit_9.6.0.msi" -Wait
+    }
 }
 
 # Install PowerCLI
+set-psrepository PSGallery  -InstallationPolicy trusted
 Install-Module -Name VMware.PowerCLI
 
 # Configure Powershell unrestricted execution policy
@@ -88,24 +95,24 @@ write-host
 Write-host "Installing Myrtille"
 Start-Process "msiexec.exe" -argumentlist "/qb /l* $PSScriptRoot\setup\myrtille-log.txt /i $PSScriptRoot\setup\myrtille.msi" -Wait
 
-if ( ! Test-Path "$PSScriptRoot\settings.cfg"){
+if (!(Test-Path "$PSScriptRoot\settings.cfg")){
     Write-Host "Creating default settings.cfg"
     copy "$PSScriptRoot\settings.cfg.sample" "$PSScriptRoot\settings.cfg"
 }
-if ( ! Test-Path "$PSScriptRoot\cmdb\descriptions.tbl"){
+if (!(Test-Path "$PSScriptRoot\cmdb\descriptions.tbl")){
     Write-Host "Creating default descriptions.tbl"
     copy "$PSScriptRoot\cmdb\descriptions.tbl.sample" "$PSScriptRoot\cmdb\descriptions.tbl"
 }
 
 $conf=. "$PSScriptRoot\get-vlabsettings.ps1"
 
-if ( ! Test-Path "$PSScriptRoot\vicred.clixml" ){
+if (!(Test-Path "$PSScriptRoot\vicred.clixml" )){
     Write-Host "Enter Credentials for"$conf.vCenter 
     $VICred = Get-Credential -message "Enter the credentials for vCenter server $($conf.vcenter)"
     $VICred | Export-CliXml "$PSScriptRoot\vicred.clixml"
 }
 
-if ( ! Test-Path "$PSScriptRoot\nccred.clixml" ){
+if (!(Test-Path "$PSScriptRoot\nccred.clixml" )){
     Write-Host "Enter Credentials for Cluster:"$conf.cluster_mgmt
     $NCCred = Get-Credential -message "Enter the credentials for ONTAP Cluster $($conf.cluster_mgmt)"
     $NCCred | Export-CliXml "$PSScriptRoot\nccred.clixml"
