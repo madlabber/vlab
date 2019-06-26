@@ -73,7 +73,7 @@ $result=invoke-command -session $session -scriptblock {
             $rdpurl+="&domain=$($conf.rdpdomain)"
             $rdpurl+="&user=$($conf.rdpuser)"
             #$rdpurl+="&passwordHash=$($conf.passwordhash)"
-            $rdpurl+="&passwordHash=$passwordhash"
+            $rdpurl+="&passwordHash=$($passwordhash.trim())"
             $rdpurl+="&connect=Connect%21"
         }
       }
