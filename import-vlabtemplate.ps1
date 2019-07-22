@@ -67,7 +67,7 @@ foreach($VMXFolder in $SearchResult) {
 		$vmx=$VMXFolder.FolderPath + $VMXFile.Path
 		$VM=New-VM -VMFilePath $vmx -VMHost $conf.vmwHost -ResourcePool $vApp -erroraction:SilentlyContinue
 		if ($VM){
-			$result=move-vm $VM $vAppNew -erroraction:SilentlyContinue 	
+			$result=move-vm $VM -destination $vAppNew -datastore $VIDatastore -erroraction:SilentlyContinue 	
 		}	
 	}
 }

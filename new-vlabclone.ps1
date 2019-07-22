@@ -109,9 +109,10 @@ Write-Host "..Registering VMs"
 foreach($VMXFolder in $SearchResult) {
 	foreach($VMXFile in $VMXFolder.File) {
 		$vmx=$VMXFolder.FolderPath + $VMXFile.Path
-		$VM=New-VM -VMFilePath $vmx -VMHost $conf.vmwHost -ResourcePool $vAppNew 
+		#$VM=New-VM -VMFilePath $vmx -VMHost $conf.vmwHost -ResourcePool $vAppNew 
+		$VM=New-VM -VMFilePath $vmx -VMHost $conf.vmwHost -ResourcePool $cloneApp
 		#$result=move-vm $VM (Get-vApp $vAppNew) 
-		$result=move-vm $VM $cloneApp 
+		$result=move-vm $VM -destination $cloneApp -datastore $VIDatastore
 		write-host "....$VM"
 	}
 }
