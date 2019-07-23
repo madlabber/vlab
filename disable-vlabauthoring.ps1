@@ -65,7 +65,12 @@ $result=invoke-command -session $session -scriptblock {
             $vmx=$VMXFolder.FolderPath + $VMXFile.Path
             $VM=New-VM -VMFilePath $vmx -VMHost $conf.vmwHost -ResourcePool $vApp -erroraction:SilentlyContinue
             if ($VM){
-                $result=move-vm $VM -destination $vApp -datastore $conf.VIDatastore -erroraction:SilentlyContinue  
+                #$result=move-vm $VM -destination $vApp -erroraction:SilentlyContinue  
+                #move-vm is broken in vCenter 6.7U2.  This API back door might work:
+                $cloneApp=get-vapp $vApp
+                $spec = New-Object VMware.Vim.VirtualMachineRelocateSpec
+                $spec.Pool = $cloneApp.ExtensionData.MoRef
+                $VM.ExtensionData.RelocateVM($spec, [VMware.Vim.VirtualMachineMovePriority]::defaultPriority)
             }   
         }
     }
