@@ -72,6 +72,7 @@ foreach($VMXFolder in $SearchResult) {
 		    $spec = New-Object VMware.Vim.VirtualMachineRelocateSpec
 		    $spec.Pool = $vAppNew.ExtensionData.MoRef
 		    $VM.ExtensionData.RelocateVM($spec, [VMware.Vim.VirtualMachineMovePriority]::defaultPriority)	
+		    write-host "....$VM"
 		}	
 	}
 }

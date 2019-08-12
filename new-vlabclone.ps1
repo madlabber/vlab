@@ -112,15 +112,8 @@ foreach($VMXFolder in $SearchResult) {
 		$VM=New-VM -VMFilePath $vmx -VMHost $conf.vmwHost -ResourcePool $cloneApp
 		#$result=move-vm $VM -destination $cloneApp 
 		#move-vm is broken in vCenter 6.7U2.  This API back door might work:
-		#$vmName = 'MyVM'
-		#$rpName = 'MyRP'
-
-		#$vm = $VM
-		#$rp = $cloneApp
-
 		$spec = New-Object VMware.Vim.VirtualMachineRelocateSpec
 		$spec.Pool = $cloneApp.ExtensionData.MoRef
-
 		$VM.ExtensionData.RelocateVM($spec, [VMware.Vim.VirtualMachineMovePriority]::defaultPriority)
 		write-host "....$VM"
 	}
