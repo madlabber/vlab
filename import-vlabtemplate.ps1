@@ -57,23 +57,23 @@ $SearchSpec = New-Object VMware.Vim.HostDatastoreBrowserSearchSpec
 $SearchSpec.matchpattern = "*.vmx"
 $dsBrowser = Get-View $ds.browser
 $DatastorePath = "[" + $ds.Summary.Name + "]/$vApp"
- 
+
 # Find all .VMX file paths in Datastore variable and filters out .snapshot
 $SearchResult = $dsBrowser.SearchDatastoreSubFolders($DatastorePath, $SearchSpec) | where {$_.FolderPath -notmatch ".snapshot"}
- 
+
 # Register all .VMX files with vCenter
 foreach($VMXFolder in $SearchResult) {
 	foreach($VMXFile in $VMXFolder.File) {
 		$vmx=$VMXFolder.FolderPath + $VMXFile.Path
 		$VM=New-VM -VMFilePath $vmx -VMHost $conf.vmwHost -ResourcePool $vApp -erroraction:SilentlyContinue
 		if ($VM){
-			#$result=move-vm $VM -destination $vAppNew -erroraction:SilentlyContinue 
+			#$result=move-vm $VM -destination $vAppNew -erroraction:SilentlyContinue
 			#move-vm is broken in vCenter 6.7U2.  This API back door might work:
 		    $spec = New-Object VMware.Vim.VirtualMachineRelocateSpec
 		    $spec.Pool = $vAppNew.ExtensionData.MoRef
-		    $VM.ExtensionData.RelocateVM($spec, [VMware.Vim.VirtualMachineMovePriority]::defaultPriority)	
+		    $VM.ExtensionData.RelocateVM($spec, [VMware.Vim.VirtualMachineMovePriority]::defaultPriority)
 		    write-host "....$VM"
-		}	
+		}
 	}
 }
 
@@ -83,7 +83,8 @@ write-host "Creating portgroups"
 $virtualSwitches=get-cluster | ?{ $_.Name -eq $conf.VICluster } | get-vmhost | get-virtualswitch | ?{ $_.Name -eq $conf.vswitch}
 $portGroups=$virtualSwitches | get-virtualportgroup
 #foreach($srcPortGroup in $(get-vapp $vApp | get-vm | get-virtualportgroup | where { $_.Name -like "$vApp*" })) {
-foreach($srcPortGroup in $(get-vapp $vApp | get-vm | get-networkadapter | where { $_.NetworkName -like "$vApp*" })) {
+#foreach($srcPortGroup in $(get-vapp $vApp | get-vm | get-networkadapter | where { $_.NetworkName -like "$vApp*" })) {
+foreach($srcPortGroup in $(get-vapp $vApp | get-vm | get-networkadapter )) {
 	#Find next unused VLAN
 	DO {
 		$pgVLan++
@@ -97,8 +98,6 @@ foreach($srcPortGroup in $(get-vapp $vApp | get-vm | get-networkadapter | where 
 		$pgVLan++
 	}
 }
-
-
 
 #Connect nics to the new portgroups
 write-host "Connecting Nics"
@@ -120,20 +119,20 @@ Foreach ($VM in $VMs){
 	Foreach ($Device in ( $vm.ExtensionData.Config.Hardware.Device | where { $_.gettype().Name -eq "VirtualSerialPort" } )) {
 			$pipeName=$Device.Backing.PipeName
 			If ($pipeName -like "*$vApp*") {
-				$newPipeName=$pipeName+"_"+$newID	
-				#write-host "Serial"$Device.UnitNumber" : $pipeName => $newPipeName"			
-				
+				$newPipeName=$pipeName+"_"+$newID
+				#write-host "Serial"$Device.UnitNumber" : $pipeName => $newPipeName"
+
 				#Now.. hackery begins
 				$cfgSpec=New-Object VMware.Vim.VirtualMachineConfigSpec
-				$serial=New-Object VMware.Vim.VirtualDeviceConfigSpec 
+				$serial=New-Object VMware.Vim.VirtualDeviceConfigSpec
 				$serial.device = [VMware.Vim.VirtualDevice]$Device
-				$serial.device.Backing.PipeName=$newPipeName				
+				$serial.device.Backing.PipeName=$newPipeName
 				$cfgSpec.deviceChange = $serial
-				$serial.operation = "edit"				
-				
+				$serial.operation = "edit"
+
 				#Will it blend?
-				$VM.ExtensionData.ReconfigVM($cfgSpec)		
-			}		
+				$VM.ExtensionData.ReconfigVM($cfgSpec)
+			}
 	}
 }
 
@@ -143,7 +142,7 @@ $result=get-vapp $vApp | get-vm | New-AdvancedSetting -Name uuid.action -Value "
 
 # Ack alarms on all those VMs
 write-host "Acknowledging alarms"
-$alarmMgr = Get-View AlarmManager 
+$alarmMgr = Get-View AlarmManager
 $result=Get-vApp $vApp | Get-VM | where {$_.ExtensionData.TriggeredAlarmState} | %{
     $vm = $_
     $vm.ExtensionData.TriggeredAlarmState | %{
@@ -166,12 +165,3 @@ if ( $(get-vapp $vApp | get-vm).count -gt 0){
 
 # Drop the vApp into the pipeline
 get-vapp $vApp
-
-
-
-
-
-
-
-
-
