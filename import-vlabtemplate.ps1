@@ -102,7 +102,8 @@ foreach($srcPortGroup in $(get-vapp $vApp | get-vm | get-networkadapter )) {
 #Connect nics to the new portgroups
 write-host "Connecting Nics"
 $networkAdapters=get-vapp $vApp | get-vm | get-networkadapter
-foreach($srcPortGroup in $(get-vapp $vApp | get-vm | get-virtualportgroup | where { $_.Name -like "$vApp*" })) {
+#foreach($srcPortGroup in $(get-vapp $vApp | get-vm | get-virtualportgroup | where { $_.Name -like "$vApp*" })) {
+foreach($srcPortGroup in $(get-vapp $vApp | get-vm | get-virtualportgroup)) {
 	$result=$networkAdapters | where {$_.NetworkName -eq $srcPortGroup } | set-networkadapter -NetworkName "$srcPortGroup" -confirm:$false
 }
 
