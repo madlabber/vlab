@@ -27,9 +27,11 @@ $result=invoke-command -session $session -scriptblock {
     # Gather data
     $vols=get-ncvol
     #$labs=$vols | where { $_.Name -like "lab_*" } | where { ! $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name } | sort
-    $instances=$vols | where { $_.Name -like "lab_*" } | where { $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name } | sort
+    $instances=$vols | where { $_.Name -like "lab_*" } | where { $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name  -or $_.Name -like "lab__*" } | sort
 
-    $passwordhash=$(Invoke-WebRequest -URI http://localhost/myrtille/GetHash.aspx?password=P@ssw0rd).content
+    # Get the RDP password hash
+	$URI="http://localhost/myrtille/GetHash.aspx?password=$($conf.rdppassword)"
+    $passwordhash=$(Invoke-WebRequest -URI "$URI").content
 
     # Build the output in HTML
     $output='<form action="" method="post"><table>'
@@ -43,6 +45,27 @@ $result=invoke-command -session $session -scriptblock {
  
     $output+="  </tr>"
     foreach($instance in $instances){
+	  $parent=$instance.VolumeCloneAttributes.VolumeCloneParentAttributes.Name
+	  if ( ! $parent ) { $parent=$instance.Name}
+	  
+	  # overrides
+	  $labconf="$parent`.conf"
+	  $overrides=Get-Content "$ScriptDirectory\cmdb\$labconf" | Out-String | ConvertFrom-StringData 
+
+	  # RDP Credentials
+	  $rdpdomain=$conf.rdpdomain
+	  $rdpuser=$conf.rdpuser
+	  $rdppassword=$conf.rdppassword
+	  $rdphash=$passwordhash
+	  # RDP Overrides
+	  if ("$($overrides.rdpdomain)" -ne ""){$rdpdomain=$overrides.rdpdomain}
+	  if ("$($overrides.rdpuser)" -ne ""){$rdpuser=$overrides.rdpuser}
+	  if ("$($overrides.rdppassword)" -ne ""){
+	      $rdppassword=$overrides.rdppassword
+		  $URI="http://localhost/myrtille/GetHash.aspx?password=$($overrides.rdppassword)"
+          $rdphash=$(Invoke-WebRequest -URI "$URI").content
+	  }
+
       $output+="<tr>" 
       if ( $powerstate[$instance.name] -eq "Started"){
           $output+="  <td valign=top align=right><font color=green>&#9864</font></td>"        
@@ -52,7 +75,7 @@ $result=invoke-command -session $session -scriptblock {
       }
 
       $output+='  <td valign=top><a href="/instance?'+$instance+'">'+$instance+'</a></td>' 
-      $output+="  <td valign=top>"+$descriptions[$instance.VolumeCloneAttributes.VolumeCloneParentAttributes.Name]+"</td>"       
+      $output+="  <td valign=top>"+$descriptions[$parent]+"</td>"       
       $output+="  <td valign=top>"+$powerstate[$instance.Name]+"</td>" 
       #Action buttons:
       $output+="    <td nowrap>"
@@ -70,10 +93,9 @@ $result=invoke-command -session $session -scriptblock {
             $wanip=$gateway.guest.IPAddress[0]
             $rdpurl="$($conf.rdphost)/Myrtille/?__EVENTTARGET=&__EVENTARGUMENT="
             $rdpurl+="&server=$wanip"
-            $rdpurl+="&domain=$($conf.rdpdomain)"
-            $rdpurl+="&user=$($conf.rdpuser)"
-            #$rdpurl+="&passwordHash=$($conf.passwordhash)"
-            $rdpurl+="&passwordHash=$($passwordhash.trim())"
+            $rdpurl+="&domain=$rdpdomain"
+            $rdpurl+="&user=$rdpuser"
+            $rdpurl+="&passwordHash=$($rdphash.trim())"
             $rdpurl+="&connect=Connect%21"
         }
       }

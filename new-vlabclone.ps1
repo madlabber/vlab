@@ -50,7 +50,7 @@ if ( ! $vAppNew ) {
 		$vAppNew="$vApp"+"_"+"$newID"
 		$result=$vApps | where { $_.Name -eq "$vAppNew" }
 	} while ( $result )
-} 
+}
 #endregion
 
 # Feedback
@@ -99,7 +99,7 @@ $SearchSpec = New-Object VMware.Vim.HostDatastoreBrowserSearchSpec
 $SearchSpec.matchpattern = "*.vmx"
 $dsBrowser = Get-View $ds.browser
 $DatastorePath = "[" + $ds.Summary.Name + "]/$vAppNew"
- 
+
 # Find all .VMX file paths in Datastore variable and filters out .snapshot
 $SearchResult = $dsBrowser.SearchDatastoreSubFolders($DatastorePath, $SearchSpec) | where {$_.FolderPath -notmatch ".snapshot"}
 
@@ -110,7 +110,7 @@ foreach($VMXFolder in $SearchResult) {
 	foreach($VMXFile in $VMXFolder.File) {
 		$vmx=$VMXFolder.FolderPath + $VMXFile.Path
 		$VM=New-VM -VMFilePath $vmx -VMHost $conf.vmwHost -ResourcePool $cloneApp
-		#$result=move-vm $VM -destination $cloneApp 
+		#$result=move-vm $VM -destination $cloneApp
 		#move-vm is broken in vCenter 6.7U2.  This API back door might work:
 		$spec = New-Object VMware.Vim.VirtualMachineRelocateSpec
 		$spec.Pool = $cloneApp.ExtensionData.MoRef
@@ -125,7 +125,7 @@ $cloneVMs=$cloneApp | get-vm
 $srcPortGroups=$cloneVMs | get-virtualportgroup | where { $_.Name -like "$vApp*" }
 $networkAdapters=$cloneVMs | get-networkadapter
 $LANAdapters=$networkAdapters | where { $_.NetworkName -like "$vApp*"}
-$WANAdapters=$networkAdapters | where { $_.NetworkName -notlike "$vApp*"} 
+$WANAdapters=$networkAdapters | where { $_.NetworkName -notlike "$vApp*"}
 foreach($srcPortGroup in $srcPortGroups){
 	$pgName="$vAppNew"+$srcPortGroup.name.substring($vApp.length)
 	write-host "....$srcPortGroup => $pgName"
@@ -143,7 +143,7 @@ $result=$WANAdapters | set-networkadapter -NetworkName $conf.VIPortgroup -confir
 
 #foreach($srcPortGroup in $($srcApp | get-vm | get-virtualportgroup | where { $_.Name -like "$vApp*" })) {
 #	$pgName="$vAppNew"+$srcPortGroup.name.substring($vApp.length)
-#	write-host "....$srcPortGroup => $pgName"	
+#	write-host "....$srcPortGroup => $pgName"
 #	$result=$networkAdapters | where {$_.NetworkName -eq $srcPortGroup } | set-networkadapter -NetworkName "$pgName" -confirm:$false
 #}
 
@@ -161,22 +161,22 @@ Foreach ($VM in $VMs){
 	Foreach ($Device in ( $vm.ExtensionData.Config.Hardware.Device | where { $_.gettype().Name -eq "VirtualSerialPort" } )) {
 			$pipeName=$Device.Backing.PipeName
 			If ($pipeName -like "*$vApp*") {
-				#$newPipeName=$pipeName+"_"+$newID	
-				#write-host "Serial"$Device.UnitNumber" : $pipeName => $newPipeName"	
-				$newPipeName=$vAppNew+$pipeName.substring($vApp.length)	
-				write-host "....$VM`:serial$($Device.UnitNumber)`:: $pipeName => $newPipeName"					
-				
+				#$newPipeName=$pipeName+"_"+$newID
+				#write-host "Serial"$Device.UnitNumber" : $pipeName => $newPipeName"
+				$newPipeName=$vAppNew+$pipeName.substring($vApp.length-1)
+				write-host "....$VM`:serial$($Device.UnitNumber)`:: $pipeName => $newPipeName"
+
 				#Now.. hackery begins
 				$cfgSpec=New-Object VMware.Vim.VirtualMachineConfigSpec
-				$serial=New-Object VMware.Vim.VirtualDeviceConfigSpec 
+				$serial=New-Object VMware.Vim.VirtualDeviceConfigSpec
 				$serial.device = [VMware.Vim.VirtualDevice]$Device
-				$serial.device.Backing.PipeName=$newPipeName				
+				$serial.device.Backing.PipeName=$newPipeName
 				$cfgSpec.deviceChange = $serial
-				$serial.operation = "edit"				
-				
+				$serial.operation = "edit"
+
 				#Will it blend?
-				$VM.ExtensionData.ReconfigVM($cfgSpec)		
-			}		
+				$VM.ExtensionData.ReconfigVM($cfgSpec)
+			}
 	}
 }
 
@@ -186,7 +186,7 @@ $result=get-vapp $vAppNew | get-vm | New-AdvancedSetting -Name uuid.action -Valu
 
 # Ack alarms on all those VMs
 write-host "..Acknowledging alarms"
-$alarmMgr = Get-View AlarmManager 
+$alarmMgr = Get-View AlarmManager
 $result=Get-vApp $vAppNew | Get-VM | where {$_.ExtensionData.TriggeredAlarmState} | %{
     $vm = $_
     $vm.ExtensionData.TriggeredAlarmState | %{
