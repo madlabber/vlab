@@ -3,6 +3,7 @@
 node_modules/
 setup/
 cmdb/*.jpg
+cmdb/*.conf
 cmdb/descriptions.tbl
 package-lock.json
 package-lock.json

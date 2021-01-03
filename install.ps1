@@ -9,9 +9,9 @@
 
 #>
 
-# Must be run in an administrator session 
+# Must be run in an administrator session
 if (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
-    write-error "Installation requires administrator priviledges.  Run from an administrator powershell session."     
+    write-error "Installation requires administrator priviledges.  Run from an administrator powershell session."
     break
 }
 # Verify Powershell Version
@@ -22,14 +22,14 @@ if (  $psversiontable.PSVersion.Major -lt 5 ){
 
 # Install PSTK (Manual step)
 if ( $(get-module -listavailable | where { $_.Name -eq "DataONTAP" }).count -eq 0 ){
-    if(!(Test-Path "C:\Windows\Temp\NetApp_PowerShell_Toolkit_9.6.0.msi" )){
+    if(!(Test-Path "C:\Windows\Temp\NetApp_PowerShell_Toolkit_9.8.0.msi" )){
         write-error "The NetApp Powershell Toolkit (PSTK) is required."
         write-error "The PSTK is available from the toolchest area support.netapp.com"
         break
     }
     else {
         Write-host "Installing PSTK"
-        Start-Process "msiexec.exe" -argumentlist "/qb /l* C:\Windows\Temp\pstk-log.txt /i C:\Windows\Temp\NetApp_PowerShell_Toolkit_9.6.0.msi" -Wait
+        Start-Process "msiexec.exe" -argumentlist "/qb /l* C:\Windows\Temp\pstk-log.txt /i C:\Windows\Temp\NetApp_PowerShell_Toolkit_9.8.0.msi" -Wait
     }
 }
 
@@ -59,8 +59,10 @@ If(!(Test-Path "$PSScriptRoot\setup")) { New-Item -Path "$PSScriptRoot\setup" -N
 [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
 
 # Install Node.js
-$nodejs_url = "https://nodejs.org/dist/v10.15.3/node-v10.15.3-x64.msi"
-$nodejs_exe = "$PSScriptRoot\setup\node-v10.15.3-x64.msi"
+#$nodejs_url = "https://nodejs.org/dist/v10.15.3/node-v10.15.3-x64.msi"
+#$nodejs_exe = "$PSScriptRoot\setup\node-v10.15.3-x64.msi"
+$nodejs_url = "https://nodejs.org/dist/v14.15.3/node-v14.15.3-x64.msi"
+$nodejs_exe = "$PSScriptRoot\setup\node-v14.15.3-x64.msi"
 if(!(Test-Path "$nodejs_exe")){
     write-host "Downloading node.js."
     $wc = New-Object System.Net.WebClient
@@ -69,8 +71,8 @@ if(!(Test-Path "$nodejs_exe")){
 }
 write-host
 Write-host "Installing node.js"
-Start-Process "msiexec.exe" -argumentlist "/qn /l* $PSScriptRoot\setup\node-log.txt /i $PSScriptRoot\setup\node-v10.15.3-x64.msi" -Wait
-$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User") 
+Start-Process "msiexec.exe" -argumentlist "/qn /l* $PSScriptRoot\setup\node-log.txt /i $PSScriptRoot\setup\node-v14.15.3-x64.msi" -Wait
+$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
 
 # npm install nodemon -g
 Write-host
@@ -81,17 +83,17 @@ Write-Host "Installing express."
 npm install express
 
 #Install myrtille, be sure to change the default port to 8083
-$myrtille_url = "http://github.com/cedrozor/myrtille/releases/download/v2.3.1/Myrtille_2.3.1_x86_x64_Setup.exe"
-$myrtille_exe = "$PSScriptRoot\setup\Myrtille_2.3.1_x86_x64_Setup.exe"
+$myrtille_url = "https://github.com/cedrozor/myrtille/releases/download/v2.9.1/Myrtille_2.9.1_x86_x64_Setup.msi"
+#$myrtille_exe = "$PSScriptRoot\setup\Myrtille_2.3.1_x86_x64_Setup.exe"
 $myrtille_msi = "$PSScriptRoot\setup\Myrtille.msi"
 write-host "Downloading Myrtille."
 $wc = New-Object System.Net.WebClient
-$wc.DownloadFile($myrtille_url, $myrtille_exe)
+$wc.DownloadFile($myrtille_url, $myrtille_msi)
 write-Output "Download complete."
 write-host
-Write-host "Extracting Myrtille"
-Start-Process "$myrtille_exe" "-y" -Wait
-write-host
+#Write-host "Extracting Myrtille"
+#Start-Process "$myrtille_exe" "-y" -Wait
+#write-host
 Write-host "Installing Myrtille"
 Start-Process "msiexec.exe" -argumentlist "/qb /l* $PSScriptRoot\setup\myrtille-log.txt /i $PSScriptRoot\setup\myrtille.msi" -Wait
 
@@ -107,7 +109,7 @@ if (!(Test-Path "$PSScriptRoot\cmdb\descriptions.tbl")){
 $conf=. "$PSScriptRoot\get-vlabsettings.ps1"
 
 if (!(Test-Path "$PSScriptRoot\vicred.clixml" )){
-    Write-Host "Enter Credentials for"$conf.vCenter 
+    Write-Host "Enter Credentials for"$conf.vCenter
     $VICred = Get-Credential -message "Enter the credentials for vCenter server $($conf.vcenter)"
     $VICred | Export-CliXml "$PSScriptRoot\vicred.clixml"
 }
