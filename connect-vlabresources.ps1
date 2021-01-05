@@ -17,7 +17,7 @@ $conf=. "$ScriptDirectory\get-vlabsettings.ps1"
   # NetApp Powershell Toolkit
   $ncModule=get-module | where { $_.Name -eq "DataONTAP" }
   if ( !$ncModule ) { 
-    import-module DataONTAP 
+    Import-Module "C:\Program Files (x86)\NetApp\NetApp PowerShell Toolkit\Modules\DataONTAP" 
   }
 	
   # VMware PowerCLI Snap-in

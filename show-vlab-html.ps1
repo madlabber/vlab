@@ -42,8 +42,10 @@ $result=invoke-command -session $session -scriptblock {
 	
 	# overrides
 	$labconf="$parent`.conf"
-	$overrides=Get-Content "$ScriptDirectory\cmdb\$labconf" | Out-String | ConvertFrom-StringData 
-    ForEach ($Key in $overrides.Keys) {$conf.$Key = $overrides.$Key}	
+    if( Test-Path "$ScriptDirectory\cmdb\$labconf" ){
+	    $overrides=Get-Content "$ScriptDirectory\cmdb\$labconf" | Out-String | ConvertFrom-StringData 
+        ForEach ($Key in $overrides.Keys) {$conf.$Key = $overrides.$Key}	
+    }
 	
     # Get the RDP password hash
 	$URI="http://localhost/myrtille/GetHash.aspx?password=$($conf.rdppassword)"
