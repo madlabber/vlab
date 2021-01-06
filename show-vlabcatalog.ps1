@@ -11,11 +11,11 @@
 
 # Settings
 $ScriptDirectory = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
-$conf=. "$ScriptDirectory\get-vlabsettings.ps1"
+$conf=Get-Content "$ScriptDirectory\settings.cfg" | Out-String | ConvertFrom-StringData 
 & "$ScriptDirectory\Connect-vLabResources.ps1"
 
 # Descriptions
-$descriptions=. "$ScriptDirectory\get-vlabdescriptions.ps1"
+$descriptions=Get-Content "$PSScriptRoot\cmdb\descriptions.tbl" | Out-String | ConvertFrom-StringData
 
 #get power status
 $result=get-vapp | foreach { $powerstate = @{} } { $powerstate[$_.Name] = $_.Status }

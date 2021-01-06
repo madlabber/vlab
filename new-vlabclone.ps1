@@ -22,9 +22,8 @@ Param(
 
 Write-Host "Authenticating."
 #region Settings
-$ScriptDirectory = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
-$conf=. "$ScriptDirectory\get-vlabsettings.ps1"
-& "$ScriptDirectory\Connect-vLabResources.ps1"
+$conf=. "$PSScriptRoot\get-vlabsettings.ps1"
+& "$PSScriptRoot\Connect-vLabResources.ps1"
 
 # Settings
 [int]$newID=$conf.newID

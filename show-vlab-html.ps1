@@ -19,7 +19,7 @@ $result=invoke-command -session $session -scriptblock {
     )
 
     # Descriptions
-    $descriptions=. "$ScriptDirectory\get-vlabdescriptions.ps1"
+    $descriptions=Get-Content "$ScriptDirectory\cmdb\descriptions.tbl" | Out-String | ConvertFrom-StringData
 
     # Get this vApp
     $vApp=get-vapp "$CURRENTVLAB"
@@ -111,7 +111,7 @@ $result=invoke-command -session $session -scriptblock {
     Write-Host "</td></tr></table>"
 } -ArgumentList $CURRENTVLAB,$psscriptroot
 
-$result=disconnect-pssession -Name "node-vlab" -IdleTimeoutSec 3600 -WarningAction silentlyContinue
+$result=$session | disconnect-pssession -IdleTimeoutSec 3600 -WarningAction silentlyContinue
 
-#This keeps the powershell process from ending before all of the output has reached the node.js front end.
+# Keep the powershell process alive so the output can reach the node.js front end.
 start-sleep -Milliseconds 50

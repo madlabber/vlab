@@ -10,9 +10,8 @@
 #>
 
 # Settings
-$ScriptDirectory = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
-$conf=. "$ScriptDirectory\get-vlabsettings.ps1"
-& "$ScriptDirectory\Connect-vLabResources.ps1"
+$conf=. "$PSScriptRoot\get-vlabsettings.ps1"
+& "$PSScriptRoot\Connect-vLabResources.ps1"
 	
 # List volumes that start with lab_
 get-ncvol | where { $_.Name -like "lab_*" } | where { ! $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name }

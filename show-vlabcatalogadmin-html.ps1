@@ -9,17 +9,16 @@
 
 #>
 
-$ScriptDirectory = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
 
 $session=.\get-vlabsession.ps1
 $result=invoke-command -session $session -scriptblock { 
     param($ScriptDirectory)   
 
     # Descriptions
-    $descriptions=. "$ScriptDirectory\get-vlabdescriptions.ps1"
+    $descriptions=Get-Content "$ScriptDirectory\cmdb\descriptions.tbl" | Out-String | ConvertFrom-StringData
 
     #conf
-    $conf=. "$ScriptDirectory\get-vlabsettings.ps1"
+    $conf=Get-Content "$ScriptDirectory\settings.cfg" | Out-String | ConvertFrom-StringData 
 
     #get power status
     $result=get-vapp | foreach { $powerstate = @{} } { $powerstate[$_.Name] = $_.Status }
@@ -116,9 +115,9 @@ $result=invoke-command -session $session -scriptblock {
     }
     $output+="</table></form>"
     $output | Write-Host
-} -ArgumentList $ScriptDirectory
+} -ArgumentList $PSScriptRoot
 
-$result=disconnect-pssession -Name "node-vlab" -IdleTimeoutSec 3600 -WarningAction silentlyContinue
+$result=$session | disconnect-pssession -IdleTimeoutSec 3600 -WarningAction silentlyContinue
 
-# This keeps the powershell process from ending before all of the output has reached the node.js front end.
+# Keep the powershell process alive so the output can reach the node.js front end.
 start-sleep -Milliseconds 50

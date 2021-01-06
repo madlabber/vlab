@@ -16,7 +16,7 @@ $result=invoke-command -session $session -scriptblock {
 
     #Collect Objects  
     $conf=. "$ScriptDirectory\get-vlabsettings.ps1"  
-    $descriptions=. "$ScriptDirectory\get-vlabdescriptions.ps1"            
+    $descriptions=Get-Content "$ScriptDirectory\cmdb\descriptions.tbl" | Out-String | ConvertFrom-StringData            
     $vols=get-ncvol
     $labs=$vols | where { $_.Name -like "lab_*" } | where { ! $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name }
     $instances=$vols | where { $_.Name -like "lab_*" } | where { $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name }

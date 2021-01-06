@@ -23,10 +23,10 @@ $result=invoke-command -session $session -scriptblock {
     # Gather data
     if($refresh){
         # config files
-        $conf=. "$ScriptDirectory\get-vlabsettings.ps1" 
+        $conf=Get-Content "$ScriptDirectory\settings.cfg" | Out-String | ConvertFrom-StringData 
 
         # Descriptions
-        $descriptions=. "$ScriptDirectory\get-vlabdescriptions.ps1"
+        $descriptions=Get-Content "$ScriptDirectory\cmdb\descriptions.tbl" | Out-String | ConvertFrom-StringData
 
         # Catalog entries are vols that are not flexclones
         $vols=get-ncvol
@@ -57,7 +57,8 @@ $result=invoke-command -session $session -scriptblock {
     $output | Write-Host
 } -ArgumentList $psscriptroot
 
-$result=disconnect-pssession -Name "node-vlab" -IdleTimeoutSec 3600 -WarningAction silentlyContinue
+# Disconnect from the session
+$result=$session | disconnect-pssession -IdleTimeoutSec 3600 -WarningAction silentlyContinue
 
-# This keeps the powershell process from ending before all of the output has reached the node.js front end.
-start-sleep -Milliseconds 100
+# Keep the powershell process alive so the output can reach the node.js front end.
+start-sleep -Milliseconds 50

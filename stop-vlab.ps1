@@ -16,7 +16,7 @@ Param(
   [switch]$kill
 )
 
-$conf=. "$psscriptroot\get-vlabsettings.ps1"
+$conf=Get-Content "$PSScriptRoot\settings.cfg" | Out-String | ConvertFrom-StringData 
 & "$psscriptroot\Connect-vLabResources.ps1"
 
 if ( $kill ){

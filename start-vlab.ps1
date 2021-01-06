@@ -15,7 +15,7 @@ Param(
   [Parameter(Mandatory=$True,Position=1)][string]$vApp
 )
 
-$conf=. "$psscriptroot\get-vlabsettings.ps1"
+$conf=Get-Content "$PSScriptRoot\settings.cfg" | Out-String | ConvertFrom-StringData 
 & "$psscriptroot\Connect-vLabResources.ps1"
 	
 get-vapp $vApp | get-vm | start-vm

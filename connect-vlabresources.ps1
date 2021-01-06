@@ -10,8 +10,7 @@
 #>
 
 # Load config
-$ScriptDirectory = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
-$conf=. "$ScriptDirectory\get-vlabsettings.ps1"
+$conf=. "$PSScriptRoot\get-vlabsettings.ps1"
 
 #region Import modules
   # NetApp Powershell Toolkit
@@ -37,17 +36,17 @@ $conf=. "$ScriptDirectory\get-vlabsettings.ps1"
 	# Connect to vCenter
 	if (  $defaultVIServer.Name -ne $conf.vCenter ) {
 		[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-		$VICred = Import-CliXml "$ScriptDirectory\vicred.clixml"
+		$VICred = Import-CliXml "$PSScriptRoot\vicred.clixml"
 		$result=$(Connect-VIServer -Server $conf.vCenter -credential $VICred )
 	}
 	if ( ! $defaultVIServer.IsConnectedr ) {
 		[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-		$VICred = Import-CliXml "$ScriptDirectory\vicred.clixml"
+		$VICred = Import-CliXml "$PSScriptRoot\vicred.clixml"
 		$result=$(Connect-VIServer -Server $conf.vCenter -credential $VICred )
 	}	
 	# Connect to NetApp Cluster	
 	if ( $CurrentNcController.Name -ne $conf.cluster_mgmt ) {
-		$NCCred = Import-CliXml "$ScriptDirectory\nccred.clixml"
+		$NCCred = Import-CliXml "$PSScriptRoot\nccred.clixml"
 		$result=$(Connect-NcController $conf.cluster_mgmt -vserver $conf.vserver -credential $NCCred )
 	}
 #endregion

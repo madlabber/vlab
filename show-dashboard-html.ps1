@@ -1,20 +1,17 @@
 <#
 .SYNOPSIS
-	This script returns the html table for the admin menu
+	This script returns the html for the dashboard
 .DESCRIPTION
-	This script returns the html table for the admin menu
+	This script returns the html for the dashboard
 .EXAMPLE
 
 .NOTES
     Parameters are supplied by configuration file.
 #>
 
-$ScriptDirectory = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
 $session=.\get-vlabsession.ps1
 $result=invoke-command -session $session -scriptblock { 
     param($ScriptDirectory)
-
-    #$conf=. "$ScriptDirectory\get-vlabsettings.ps1"
     
     # Manage the refresh timer
     $refresh=$false
@@ -26,7 +23,7 @@ $result=invoke-command -session $session -scriptblock {
     if($refresh){
 
         #Collect Objects  
-        $conf=. "$ScriptDirectory\get-vlabsettings.ps1"              
+        $conf=Get-Content "$ScriptDirectory\settings.cfg" | Out-String | ConvertFrom-StringData              
         $vols=get-ncvol
         $labs=$vols | where { $_.Name -like "lab_*" } | where { ! $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name }
         $instances=$vols | where { $_.Name -like "lab_*" } | where { $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name }
@@ -45,6 +42,7 @@ $result=invoke-command -session $session -scriptblock {
         # reset the timer
         $timer = [System.Diagnostics.Stopwatch]::StartNew()
     }
+
     # Build the dashboard in HTML
     Write-Host "<center><table style=`"display: inline-block;`">"
     Write-Host   "<tr>"
@@ -87,9 +85,10 @@ $result=invoke-command -session $session -scriptblock {
     Write-Host   "</tr>"
     Write-Host "</table></center>"
 
-} -ArgumentList $ScriptDirectory
+} -ArgumentList $PSScriptRoot
 
-$result=disconnect-pssession -Name "node-vlab" -IdleTimeoutSec 3600 -WarningAction silentlyContinue
+# Disconnect from the session
+$result=$session | disconnect-pssession -IdleTimeoutSec 3600 -WarningAction silentlyContinue
 
-#This keeps the powershell process from ending before all of the output has reached the node.js front end.
+# Keep the powershell process alive so the output can reach the node.js front end.
 start-sleep -Milliseconds 50
