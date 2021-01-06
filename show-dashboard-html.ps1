@@ -44,46 +44,46 @@ $result=invoke-command -session $session -scriptblock {
     }
 
     # Build the dashboard in HTML
-    Write-Host "<center><table style=`"display: inline-block;`">"
-    Write-Host   "<tr>"
-    Write-Host      "<td align=center>"
-    Write-Host        "<table style=`"display: inline-block;`">"
-    Write-Host          "<tr><td colspan=`"7`"><b><h3><center>Labs</center></h3></b></td>"
-    Write-Host          "</tr><tr><td width=25px></td>"   
-    Write-Host            "<td>Available</td>   <td width=25px></td>"
-    Write-Host            "<td>Provisioned</td> <td width=25px></td>"
-    Write-host            "<td>Running</td>     <td width=25px></td>"
-    Write-Host          "</tr><tr><td width=25px></td>"
-    Write-Host            "<td align=center><h1>$($labs.count)</h1></td>      <td width=25px></td>"
-    Write-Host            "<td align=center><h1>$($instances.count)</h1></td> <td width=25px></td>"
-    Write-Host            "<td align=center><h1>$($running.count)</h1></td>   <td width=25px></td>"
-    Write-Host          "</tr><tr><td width=25px></td>"
-    Write-Host            "<td><h6>:</h6></td><td width=25px></td>"
-    Write-Host            "<td></td><td width=25px></td>"
-    Write-host            "<td></td><td width=25px></td>"
-    Write-Host          "</tr>"
-    Write-Host        "</table>"
-    Write-Host        "<table style=`"display: inline-block;`">"
-    Write-Host          "<tr><td colspan=`"9`"><b><h3><center>Resources</center></h3></b></td>"
-    Write-Host          "</tr><tr><td width=25px></td>" 
-    Write-Host            "<td align=center>Hosts</td><td width=25px></td>"
-    Write-Host            "<td align=center>CPU</td><td width=25px></td>"
-    Write-Host            "<td align=center>Memory</td><td width=25px></td>"
-    Write-host            "<td align=center>Storage</td><td width=25px></td>"
-    Write-Host          "</tr><tr><td width=25px></td>"
-    Write-Host            "<td align=center><h1>"$($VMHosts.count)"</h1></td><td width=25px></td>"
-    Write-Host            "<td align=center><h1>"$($CpuUsageMhz/$CpuTotalMhz).tostring('p0').Replace(' ','')"</h1></td><td width=25px></td>"
-    Write-Host            "<td align=center><h1>"$($MemoryUsageGB/$MemoryTotalGB).tostring('p0').Replace(' ','')"</h1></td><td width=25px></td>"
-    Write-Host            "<td align=center><h1>"$(($TotalDisk-$AvailableDisk)/$TotalDisk).tostring('p0').Replace(' ','')"</h1></td><td width=25px></td>"
-    Write-Host          "</tr><tr><td width=25px></td>"
-    Write-Host            "<td align=center><h6> "$conf.VICluster"</h6></td><td width=25px></td>"
-    Write-Host            "<td align=center><h6> "$CpuUsageMhz" / "$CpuTotalMhz" Mhz </h6></td><td width=25px></td>"
-    Write-Host            "<td align=center><h6> "$MemoryUsageGB.tostring("n2")" / "$MemoryTotalGB.tostring("n2")"GB </h6></td><td width=25px></td>"
-    Write-host            "<td align=center><h6> "$($TotalDisk-$AvailableDisk).tostring('n2')" / "$TotalDisk.tostring('n2')" GB </h6></td><td width=25px></td></tr>"
-    Write-Host        "</table>"
-    Write-Host      "</td>"
-    Write-Host   "</tr>"
-    Write-Host "</table></center>"
+     "<center><table style=`"display: inline-block;`">",
+       "<tr>",
+          "<td align=center>",
+            "<table style=`"display: inline-block;`">",
+              "<tr><td colspan=`"7`"><b><h3><center>Labs</center></h3></b></td>",
+              "</tr><tr><td width=25px></td>",  
+                "<td>Available</td>   <td width=25px></td>",
+                "<td>Provisioned</td> <td width=25px></td>",
+                "<td>Running</td>     <td width=25px></td>",
+              "</tr><tr><td width=25px></td>",
+                "<td align=center><h1>$($labs.count)</h1></td>      <td width=25px></td>",
+                "<td align=center><h1>$($instances.count)</h1></td> <td width=25px></td>",
+                "<td align=center><h1>$($running.count)</h1></td>   <td width=25px></td>",
+              "</tr><tr><td width=25px></td>",
+                "<td><h6>:</h6></td><td width=25px></td>",
+                "<td></td><td width=25px></td>",
+                "<td></td><td width=25px></td>",
+              "</tr>",
+            "</table>",
+            "<table style=`"display: inline-block;`">",
+              "<tr><td colspan=`"9`"><b><h3><center>Resources</center></h3></b></td>",
+              "</tr><tr><td width=25px></td>",
+                "<td align=center>Hosts</td><td width=25px></td>",
+                "<td align=center>CPU</td><td width=25px></td>",
+                "<td align=center>Memory</td><td width=25px></td>",
+                "<td align=center>Storage</td><td width=25px></td>",
+              "</tr><tr><td width=25px></td>",
+                "<td align=center><h1>$($VMHosts.count)</h1></td><td width=25px></td>",
+                "<td align=center><h1>$($($CpuUsageMhz/$CpuTotalMhz).tostring('p0').Replace(' ',''))</h1></td><td width=25px></td>",
+                "<td align=center><h1>$($($MemoryUsageGB/$MemoryTotalGB).tostring('p0').Replace(' ',''))</h1></td><td width=25px></td>",
+                "<td align=center><h1>$($(($TotalDisk-$AvailableDisk)/$TotalDisk).tostring('p0').Replace(' ',''))</h1></td><td width=25px></td>",
+              "</tr><tr><td width=25px></td>",
+                "<td align=center><h6> $($conf.VICluster)</h6></td><td width=25px></td>",
+                "<td align=center><h6> $($CpuUsageMhz) / $($CpuTotalMhz) Mhz </h6></td><td width=25px></td>",
+                "<td align=center><h6> $($MemoryUsageGB.tostring("n2")) / $($MemoryTotalGB.tostring("n2"))GB </h6></td><td width=25px></td>",
+                "<td align=center><h6> $($($TotalDisk-$AvailableDisk).tostring('n2')) / $($TotalDisk.tostring('n2')) GB </h6></td><td width=25px></td></tr>",
+            "</table>",
+          "</td>",
+       "</tr>",
+    "</table></center>" | Write-Host 
 
 } -ArgumentList $PSScriptRoot
 

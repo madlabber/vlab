@@ -15,10 +15,9 @@ if ($result.count -ne 1) {
 }
 
 # Make sure the session is logged into the resources
-$ScriptDirectory = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
 $result=invoke-command -session $session -scriptblock {
-    param($ScriptDirectory)
-    & "$ScriptDirectory\Connect-vLabResources.ps1"
-} -ArgumentList $ScriptDirectory
+    param($ScriptRoot)
+    & "$ScriptRoot\Connect-vLabResources.ps1"
+} -ArgumentList $PSScriptRoot
 
 $session

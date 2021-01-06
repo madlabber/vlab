@@ -10,7 +10,7 @@
 #>
 
 # Load config
-$conf=. "$PSScriptRoot\get-vlabsettings.ps1"
+$conf=Get-Content "$PSScriptRoot\settings.cfg" | Out-String | ConvertFrom-StringData
 
 #region Import modules
   # NetApp Powershell Toolkit
@@ -19,13 +19,7 @@ $conf=. "$PSScriptRoot\get-vlabsettings.ps1"
     Import-Module "C:\Program Files (x86)\NetApp\NetApp PowerShell Toolkit\Modules\DataONTAP" 
   }
 	
-  # VMware PowerCLI Snap-in
- #  if ( ! $defaultVIServer ){
-	# if ( (Get-PSSnapin -Name VMware.VimAutomation.Core -ErrorAction SilentlyContinue) -eq $null ){
-	# 	Add-PSSnapin VMware.VimAutomation.Core
-	# }
- #  }
-
+  # VMware PowerCLI module
   $viModule=get-module | where { $_.Name -eq "VMware.VimAutomation.Core" }
   if ( !$viModule ) {
      import-module VMware.VimAutomation.Core
@@ -39,7 +33,7 @@ $conf=. "$PSScriptRoot\get-vlabsettings.ps1"
 		$VICred = Import-CliXml "$PSScriptRoot\vicred.clixml"
 		$result=$(Connect-VIServer -Server $conf.vCenter -credential $VICred )
 	}
-	if ( ! $defaultVIServer.IsConnectedr ) {
+	if ( ! $defaultVIServer.IsConnected ) {
 		[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 		$VICred = Import-CliXml "$PSScriptRoot\vicred.clixml"
 		$result=$(Connect-VIServer -Server $conf.vCenter -credential $VICred )
