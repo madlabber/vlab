@@ -22,7 +22,7 @@ Param(
 
 Write-Host "Authenticating."
 #region Settings
-$conf=. "$PSScriptRoot\get-vlabsettings.ps1"
+$conf=Get-Content "$PSScriptRoot\settings.cfg" | Out-String | ConvertFrom-StringData
 & "$PSScriptRoot\Connect-vLabResources.ps1"
 
 # Settings

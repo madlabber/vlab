@@ -15,7 +15,15 @@ Param(
   [Parameter(Mandatory=$True,Position=1)][string]$vApp
 )
 
-$conf=Get-Content "$PSScriptRoot\settings.cfg" | Out-String | ConvertFrom-StringData 
-& "$psscriptroot\Connect-vLabResources.ps1"
-	
-get-vapp $vApp | get-vm | start-vm
+$session=.\get-vlabsession.ps1
+write-host "Starting $vApp ..."
+$result=invoke-command -session $session -scriptblock {
+    param($ScriptRoot,$vApp)
+    get-vapp $vApp | get-vm | start-vm
+} -ArgumentList $PSScriptRoot,$vApp
+
+# Disconnect from the session
+$result=$session | disconnect-pssession -IdleTimeoutSec 3600 -WarningAction silentlyContinue
+
+# Keep the powershell process alive so the output can reach the node.js front end.
+#start-sleep -Milliseconds 50

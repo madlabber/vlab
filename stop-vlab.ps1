@@ -16,14 +16,24 @@ Param(
   [switch]$kill
 )
 
-$conf=Get-Content "$PSScriptRoot\settings.cfg" | Out-String | ConvertFrom-StringData 
-& "$psscriptroot\Connect-vLabResources.ps1"
-
+$session=.\get-vlabsession.ps1
 if ( $kill ){
     Write-Host "Powering off $vApp"
-    get-vapp $vApp | get-vm | where { $_.PowerState -ne "PoweredOff" } | stop-vm -confirm:$false    
+    $result=invoke-command -session $session -scriptblock {
+        param($ScriptRoot,$vApp)
+        get-vapp $vApp | get-vm | where { $_.PowerState -ne "PoweredOff" } | stop-vm -confirm:$false 
+    } -ArgumentList $PSScriptRoot,$vApp   
 }
 else {
     Write-Host "Shutting down $vApp"
-    get-vapp $vApp | get-vm | where { $_.PowerState -eq "PoweredOn" } | stop-vmguest -confirm:$false    
+    $result=invoke-command -session $session -scriptblock {
+        param($ScriptRoot,$vApp)
+        get-vapp $vApp | get-vm | where { $_.PowerState -eq "PoweredOn" } | stop-vmguest -confirm:$false 
+    } -ArgumentList $PSScriptRoot,$vApp   
 }
+
+# Disconnect from the session
+$result=$session | disconnect-pssession -IdleTimeoutSec 3600 -WarningAction silentlyContinue
+
+# Keep the powershell process alive so the output can reach the node.js front end.
+#start-sleep -Milliseconds 50
