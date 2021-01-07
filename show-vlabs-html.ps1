@@ -24,14 +24,14 @@ $result=invoke-command -session $session -scriptblock {
 
     # Gather data
     $vols=get-ncvol
-    #$labs=$vols | where { $_.Name -like "lab_*" } | where { ! $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name } | sort
     $instances=$vols | where { $_.Name -like "lab_*" } | where { $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name  -or $_.Name -like "lab__*" } | sort
 
     # Get the RDP password hash
-	$URI="http://localhost/myrtille/GetHash.aspx?password=$($conf.rdppassword)"
+	  $URI="http://localhost/myrtille/GetHash.aspx?password=$($conf.rdppassword)"
     $passwordhash=$(Invoke-WebRequest -URI "$URI").content
 
     # Build the output in HTML
+    # Table Header:
     $output='<form action="" method="post"><table>'
     $output+="  <tr>"
     $output+="    <td width=10px align=right></td>" 
@@ -40,51 +40,36 @@ $result=invoke-command -session $session -scriptblock {
     $output+="    <td width=7%              ><u>Status</u></td>" 
     $output+="    <td width=15%  align=left ><u>Controls</u></td>"
     $output+="    <td            align=left ><u>Session</u></td>"
- 
     $output+="  </tr>"
+
+    #Assemble Table Rows
     foreach($instance in $instances){
-	  $parent=$instance.VolumeCloneAttributes.VolumeCloneParentAttributes.Name
-	  if ( ! $parent ) { $parent=$instance.Name}
+	    $parent=$instance.VolumeCloneAttributes.VolumeCloneParentAttributes.Name
+	    if ( ! $parent ) { $parent=$instance.Name}
 	  
-	  # overrides
-	  $labconf="$parent`.conf"
-      if( Test-Path "$ScriptDirectory\cmdb\$labconf" ){
-	    $overrides=Get-Content "$ScriptDirectory\cmdb\$labconf" | Out-String | ConvertFrom-StringData }
+	    # overrides
+	    $labconf="$parent`.conf"
+        if( Test-Path "$ScriptDirectory\cmdb\$labconf" ){
+	      $overrides=Get-Content "$ScriptDirectory\cmdb\$labconf" | Out-String | ConvertFrom-StringData }
 
-	  # RDP Credentials
-	  $rdpdomain=$conf.rdpdomain
-	  $rdpuser=$conf.rdpuser
-	  $rdppassword=$conf.rdppassword
-	  $rdphash=$passwordhash
-	  # RDP Overrides
-	  if ("$($overrides.rdpdomain)" -ne ""){$rdpdomain=$overrides.rdpdomain}
-	  if ("$($overrides.rdpuser)" -ne ""){$rdpuser=$overrides.rdpuser}
-	  if ("$($overrides.rdppassword)" -ne ""){
+	    # RDP Credentials
+	    $rdpdomain=$conf.rdpdomain
+	    $rdpuser=$conf.rdpuser
+	    $rdppassword=$conf.rdppassword
+	    $rdphash=$passwordhash
+	  
+      # RDP Overrides
+	    if ("$($overrides.rdpdomain)" -ne ""){$rdpdomain=$overrides.rdpdomain}
+	    if ("$($overrides.rdpuser)" -ne ""){$rdpuser=$overrides.rdpuser}
+	    if ("$($overrides.rdppassword)" -ne ""){
 	      $rdppassword=$overrides.rdppassword
-		  $URI="http://localhost/myrtille/GetHash.aspx?password=$($overrides.rdppassword)"
-          $rdphash=$(Invoke-WebRequest -URI "$URI").content
-	  }
+		    $URI="http://localhost/myrtille/GetHash.aspx?password=$($overrides.rdppassword)"
+        $rdphash=$(Invoke-WebRequest -URI "$URI").content
+	    }
 
-      $output+="<tr>" 
-      if ( $powerstate[$instance.name] -eq "Started"){
-          $output+="  <td valign=top align=right><font color=green>&#9864</font></td>"        
-      }
-      else {
-          $output+="  <td></td>"        
-      }
-
-      $output+='  <td valign=top><a href="/instance?'+$instance+'">'+$instance+'</a></td>' 
-      $output+="  <td valign=top>"+$descriptions[$parent]+"</td>"       
-      $output+="  <td valign=top>"+$powerstate[$instance.Name]+"</td>" 
-      #Action buttons:
-      $output+="    <td nowrap>"
-    # $output+="      <input type=button value=Start onclick=`"window.open('$starturl')`"/>"
-      $output+="      <button type=`"submit`" formaction=`"/start?$($instance.name)`">Start</button>"
-      $output+="      <button type=`"submit`" formaction=`"/stop?$($instance.name)`">Stop</button>"
-      $output+="      <button type=`"submit`" formaction=`"/kill?$($instance.name)`">Kill</button>"
-      $output+="    </td>"
       $rdpurl=""
-      if ( $powerstate[$instance.name] -eq "Started"){
+      $InstanceState=$powerstate[$instance.name]
+      if ( $InstanceState -eq "Started"){
         # Find the WAN IP of the gateway VM
         $wanip=""
         $gateway=get-vapp $instance.name | get-vm "gateway"
@@ -97,7 +82,24 @@ $result=invoke-command -session $session -scriptblock {
             $rdpurl+="&passwordHash=$($rdphash.trim())"
             $rdpurl+="&connect=Connect%21"
         }
-      }
+      }      
+      if ( $rdpurl -and $wanip ){ $InstanceState="Running" }
+      $led="red"
+      if ( $InstanceState -eq "Started" -or $InstanceState -eq "Running"){ $led="green" }
+
+      # Construct Table Row
+      $output+="<tr>" 
+      $output+="  <td valign=top align=right><font color=$led>&#9864</font></td>"        
+      $output+='  <td valign=top><a href="/instance?'+$instance+'">'+$instance+'</a></td>' 
+      $output+="  <td valign=top>"+$descriptions[$parent]+"</td>"       
+      $output+="  <td valign=top>"+$InstanceState+"</td>" 
+      #Action buttons:
+      $output+="    <td nowrap>"
+      $output+="      <button type=`"submit`" formaction=`"/start?$($instance.name)`">Start</button>"
+      $output+="      <button type=`"submit`" formaction=`"/stop?$($instance.name)`">Stop</button>"
+      $output+="      <button type=`"submit`" formaction=`"/kill?$($instance.name)`">Kill</button>"
+      $output+="    </td>"
+      #Connect Button
       if ( $rdpurl -and $wanip ){
           $output+="<td valign=top>"
           $output+="<input type=button style=`"background-color:green;color:white`" value=Connect onclick=`"window.open('$rdpurl')`"/>"

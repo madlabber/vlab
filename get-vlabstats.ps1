@@ -9,14 +9,13 @@
     Parameters are supplied by configuration file.
 #>
 
-$ScriptDirectory = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
 $session=.\get-vlabsession.ps1
 $result=invoke-command -session $session -scriptblock { 
-    param($ScriptDirectory)
+    param($ScriptRoot)
 
     #Collect Objects  
-    $conf=. "$ScriptDirectory\get-vlabsettings.ps1"  
-    $descriptions=Get-Content "$ScriptDirectory\cmdb\descriptions.tbl" | Out-String | ConvertFrom-StringData            
+    $conf=Get-Content "$ScriptRoot\settings.cfg" | Out-String | ConvertFrom-StringData  
+    $descriptions=Get-Content "$ScriptRoot\cmdb\descriptions.tbl" | Out-String | ConvertFrom-StringData            
     $vols=get-ncvol
     $labs=$vols | where { $_.Name -like "lab_*" } | where { ! $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name }
     $instances=$vols | where { $_.Name -like "lab_*" } | where { $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name }
@@ -36,6 +35,6 @@ $result=invoke-command -session $session -scriptblock {
     $timer = [System.Diagnostics.Stopwatch]::StartNew()
 
 
-} -ArgumentList $ScriptDirectory
+} -ArgumentList $PSScriptRoot
 
 $result=disconnect-pssession -Name "node-vlab" -IdleTimeoutSec 3600 -WarningAction silentlyContinue

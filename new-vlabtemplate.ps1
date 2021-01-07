@@ -22,9 +22,8 @@ Param(
 )
 
 #region Settings
-$ScriptDirectory = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
-$conf=. "$ScriptDirectory\get-vlabsettings.ps1"
-& "$ScriptDirectory\Connect-vLabResources.ps1"
+$conf=Get-Content "$PSScriptRoot\settings.cfg" | Out-String | ConvertFrom-StringData
+& "$PSScriptRoot\Connect-vLabResources.ps1"
 
 # Settings
 [int]$newID=$conf.newID

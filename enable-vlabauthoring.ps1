@@ -15,7 +15,7 @@ Param(
   [Parameter(Mandatory=$True,Position=1)][string]$vApp
 )
 
-$conf=. "$PSScriptRoot\get-vlabsettings.ps1"
+$conf=Get-Content "$PSScriptRoot\settings.cfg" | Out-String | ConvertFrom-StringData
 & "$PSScriptRoot\Connect-vLabResources.ps1"
 
 #Mounting a subfolder as a datastore

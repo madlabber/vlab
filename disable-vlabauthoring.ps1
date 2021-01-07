@@ -19,11 +19,11 @@ Param(
 $session=.\get-vlabsession.ps1
 $result=invoke-command -session $session -scriptblock { 
     param($vApp,
-          $ScriptDirectory
+          $ScriptRoot
     )
 
-    $conf=. "$ScriptDirectory\get-vlabsettings.ps1"
-    & "$ScriptDirectory\Connect-vLabResources.ps1"
+    $conf=Get-Content "$ScriptRoot\settings.cfg" | Out-String | ConvertFrom-StringData
+    & "$ScriptRoot\Connect-vLabResources.ps1"
 
     # First get all the VM's in that datastore
     $VMs=get-cluster $conf.VICluster | get-datastore "$vApp" | get-vm
@@ -77,7 +77,7 @@ $result=invoke-command -session $session -scriptblock {
 
 
 
-} -ArgumentList $vApp,$psscriptroot
+} -ArgumentList $vApp,$PSScriptRoot
 
 $result=disconnect-pssession -Name "node-vlab" -IdleTimeoutSec 3600 -WarningAction silentlyContinue
 

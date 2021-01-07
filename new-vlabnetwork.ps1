@@ -19,31 +19,8 @@ Param(
 )
 
 #region Settings
-$ScriptDirectory = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
-$conf=. "$ScriptDirectory\get-vlabsettings.ps1"
-& "$ScriptDirectory\Connect-vLabResources.ps1"
-
-# Settings
-#[int]$newID=$conf.newID
-
-# Pick the host with the most free ram unless specified by config file or parameter
-#if ( ! $conf.vmwHost ){
-# $conf.vmwHost=$(get-vmhost  | Select-Object Name, @{n='FreeMem';e={$_.MemoryTotalGB - $_.MemoryUsageGB}} | sort FreeMem | select-object -last 1).Name
-#}
-#if ( $VMHost ) { $conf.vmwHost=$VMHost }
-
-# Use datastore from conf file, otherwise mount under vApp datastore
-#if ( $VIDatastore ) { $conf.VIDatastore=$VIDatastore }
-#if ( ! $conf.VIDatastore ) { $conf.VIDatastore="$vApp" }
-#if ( ! $VIDatastore ) { $VIDatastore=$conf.VIDatastore }
-
-# Find next vAppID
-#do {
-#	$newID++
-#	$vAppNew="$vApp"+"_"+"$newID"
-#	$result=get-vapp | where { $_.Name -eq "$vAppNew" }
-#} while ( $result )
-#endregion
+$conf=Get-Content "$PSScriptRoot\settings.cfg" | Out-String | ConvertFrom-StringData
+& "$PSScriptRoot\Connect-vLabResources.ps1"
 
 # FIXME: Make sure they portgroup name is not in uses
 

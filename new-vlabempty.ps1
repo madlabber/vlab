@@ -21,7 +21,7 @@ Param(
 )
 
 # Load settings.cfg
-$conf=. "$psscriptroot\get-vlabsettings.ps1"
+$conf=Get-Content "$PSScriptRoot\settings.cfg" | Out-String | ConvertFrom-StringData
 
 # Connect to resources
 & "$psscriptroot\Connect-vLabResources.ps1"

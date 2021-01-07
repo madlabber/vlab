@@ -34,7 +34,7 @@ $result=invoke-command -session $session -scriptblock {
     $labvol=get-ncvol "$CURRENTVLAB" 
     $relsnap=$labvol | get-ncsnapshot | where { $_.Name -eq "master" }
     if ( $relsnap ) { $reldate=$relsnap.Created }
-    else { $reldate = "NOT RELEASED" }
+    else { $reldate = "-" }
 
     # Find the parent volume (primary key in the description table)
     $parent=$labvol.VolumeCloneAttributes.VolumeCloneParentAttributes.Name 
@@ -51,26 +51,25 @@ $result=invoke-command -session $session -scriptblock {
 	$URI="http://localhost/myrtille/GetHash.aspx?password=$($conf.rdppassword)"
     $rdphash=$(Invoke-WebRequest -URI "$URI").content
 
+    # RDP URI link for old Safari and iOS
+    $rdpuri="rdp://full%20address=s:$($wanip):3389&audiomode=i:2&disable%20themes=i:1"
+
+    # RDP URL for Myrtille
+    $rdpurl="$($conf.rdphost)/Myrtille/?__EVENTTARGET=&__EVENTARGUMENT="
+    $rdpurl+="&server=$wanip"
+    $rdpurl+="&domain=$($conf.rdpdomain)"
+    $rdpurl+="&user=$($conf.rdpuser)"
+    $rdpurl+="&passwordHash=$rdphash"
+    $rdpurl+="&connect=Connect%21"
+
     # info table
     Write-Host "<table>"
     Write-Host "<tr><td><b>Name:</b></td><td> $CURRENTVLAB </td></tr>"
     Write-Host "<tr><td><b>Description:</b></td><td> $($descriptions[$parent]) </td></tr>"
     Write-Host "<tr><td><b>Date:</b></td><td> $reldate </td></tr>"
     if ( $wanip ){ 
-        $row='<tr><td><b>RDP:</b></td><td><a href="rdp://full%20address=s:'
-        $row+="$wanip"
-        $row+=':3389&audiomode=i:2&disable%20themes=i:1">'+"$wanip"+'</a></td></tr>' 
-        Write-Host $row 
-        $rdpurl="$($conf.rdphost)/Myrtille/?__EVENTTARGET=&__EVENTARGUMENT="
-        $rdpurl+="&server=$wanip"
-        $rdpurl+="&domain=$($conf.rdpdomain)"
-        $rdpurl+="&user=$($conf.rdpuser)"
-        $rdpurl+="&passwordHash=$rdphash"
-        $rdpurl+="&connect=Connect%21"
-        $row='<tr><td><b>Browser:</b></td><td><a href="'
-        $row+="$rdpurl"
-        $row+='" target=_blank> Connect </a></td></tr>'
-        Write-Host $row
+        Write-Host "<tr><td><b>RDP:</b></td><td><a href=`"$rdpuri`">$wanip</a></td></tr>"
+        Write-Host "<tr><td><b>Browser:</b></td><td><a href=`"$rdpurl`" target=_blank> Connect </a></td></tr>"
     }
     Write-Host "</table><br>"
 

@@ -272,7 +272,7 @@ function menuSettingsMenu {
 	do {
 		Write-Header "Configuration Settings:"
 		write-host
-		$conf=.\get-vlabsettings.ps1
+		$conf=Get-Content "$PSScriptRoot\settings.cfg" | Out-String | ConvertFrom-StringData
 		$conf | format-table
 		write-host
 		#          #12345678901234567890123456789012345678901234567890123456789012345678901234567890

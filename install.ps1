@@ -106,7 +106,7 @@ if (!(Test-Path "$PSScriptRoot\cmdb\descriptions.tbl")){
     copy "$PSScriptRoot\cmdb\descriptions.tbl.sample" "$PSScriptRoot\cmdb\descriptions.tbl"
 }
 
-$conf=. "$PSScriptRoot\get-vlabsettings.ps1"
+$conf=Get-Content "$PSScriptRoot\settings.cfg" | Out-String | ConvertFrom-StringData
 
 if (!(Test-Path "$PSScriptRoot\vicred.clixml" )){
     Write-Host "Enter Credentials for"$conf.vCenter
