@@ -1,6 +1,7 @@
 *.clixml
 *.cfg
 node_modules/
+daemon/
 setup/
 cmdb/*.jpg
 cmdb/*.conf
