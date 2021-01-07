@@ -17,6 +17,7 @@ if ($result.count -ne 1) {
 # Make sure the session is logged into the resources
 $result=invoke-command -session $session -scriptblock {
     param($ScriptRoot)
+    if (! $conf){$conf=Get-Content "$ScriptRoot\settings.cfg" | Out-String | ConvertFrom-StringData}
     & "$ScriptRoot\Connect-vLabResources.ps1"
 } -ArgumentList $PSScriptRoot
 

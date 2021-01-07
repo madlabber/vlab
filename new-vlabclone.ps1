@@ -20,10 +20,16 @@ Param(
   [Parameter][string]$VMHost
 )
 
-Write-Host "Authenticating."
+$session=.\get-vlabsession.ps1
+write-host "Provisioning $vApp ..."
+$result=invoke-command -session $session -scriptblock {
+    param($ScriptRoot,$vApp,$vAppNew,$VMHost)
+
+###
+#Write-Host "Authenticating."
 #region Settings
-$conf=Get-Content "$PSScriptRoot\settings.cfg" | Out-String | ConvertFrom-StringData
-& "$PSScriptRoot\Connect-vLabResources.ps1"
+#$conf=Get-Content "$PSScriptRoot\settings.cfg" | Out-String | ConvertFrom-StringData
+#& "$PSScriptRoot\Connect-vLabResources.ps1"
 
 # Settings
 [int]$newID=$conf.newID
@@ -209,3 +215,12 @@ write-host "<script type=`"text/javascript`">window.location = `"/instance?$vApp
 # Drop the vApp into the pipeline
 get-vapp $vAppNew
 start-sleep -seconds 1
+
+###
+} -ArgumentList $PSScriptRoot,$vApp,$vAppNew,$VMHost
+
+# Disconnect from the session
+$result=$session | disconnect-pssession -IdleTimeoutSec 3600 -WarningAction silentlyContinue
+
+# Keep the powershell process alive so the output can reach the node.js front end.
+start-sleep -Milliseconds 50
