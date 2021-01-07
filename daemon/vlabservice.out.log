@@ -221,3 +221,17 @@ listening on port 8081!
 :: C:\vlab\get-vlabstats.ps1
 /
 :: C:\vlab\show-dashboard-html.ps1
+/instances
+:: C:\vlab\show-vlabs-html.ps1
+/catalog
+:: C:\vlab\show-vlabcatalog-html.ps1
+/admin
+/
+:: C:\vlab\show-dashboard-html.ps1
+:: C:\vlab\get-vlabstats.ps1
+/catalog
+:: C:\vlab\show-vlabcatalog-html.ps1
+:: C:\vlab\get-vlabstats.ps1
+:: C:\vlab\get-vlabstats.ps1
+:: C:\vlab\get-vlabstats.ps1
+:: C:\vlab\get-vlabstats.ps1
