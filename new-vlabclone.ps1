@@ -203,5 +203,9 @@ if ( $conf.autostart -eq "true" ){
 	$result=get-vapp $vAppNew | get-vm | start-vm
 }
 
+# redirect the portal to the new instance
+write-host "<script type=`"text/javascript`">window.location = `"/instance?$vAppNew`";</script>"
+
 # Drop the vApp into the pipeline
 get-vapp $vAppNew
+start-sleep -seconds 1
