@@ -87,6 +87,7 @@ $result=invoke-command -session $session -scriptblock {
       $output+="      <button type=`"submit`" formaction=`"/authoron?$($instance.name)`">Enable</button>"
       $output+="      <button type=`"submit`" formaction=`"/authoroff?$($instance.name)`">Disable</button>"
       $output+="      <button type=`"submit`" formaction=`"/import?$($instance.name)`">Import</button>"
+      $output+="      <button type=`"submit`" formaction=`"/newsnap?$($instance.name)`">Snapshot</button>"
       $output+="    </td>"
       $rdpurl=""
       if ( $powerstate[$instance.name] -eq "Started"){

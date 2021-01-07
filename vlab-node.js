@@ -480,6 +480,34 @@ app.post('/import', (
     child.stdin.end(); 
 }));
 
+app.post('/newsnap', (
+  function (req, res) { 
+    console.log(''+req.url);  
+    var psscript = require.resolve("./new-vlabsnapshot.ps1"); 
+    var pgtitle = "Taking Snapshot...";
+    var url = require('url').parse(req.url)
+    res.on('error', function(data){console.log(""+data)});
+
+    res.writeHead(200, {'Content-Type': 'text/html'});
+    res.write('<head><meta name="viewport" content="width=device-width, initial-scale=1"></head>');
+    res.write(''+navbar);
+    res.write('<b>'+pgtitle+'</b><hr><br>');
+
+    var spawn = require("child_process").spawn,child;
+    child = spawn("powershell.exe",[psscript,url.query],{ cwd: process.cwd(), detached: false });
+    child.stdout.on("data",function(data){
+      var strData = ''+data;
+      if (strData.trim() != '') {res.write(""+data+" <br>")}
+    });
+    child.stderr.on("data",function(data){console.log(""+data)});
+    child.on("exit",function(){
+      console.log("Script finished");
+      res.write('<script type="text/javascript">javascript:window.location=document.referrer;</script>');
+      res.end('Done.');
+    });
+    child.stdin.end(); 
+}));
+
 app.use(express.static('cmdb'));
 app.use(express.static('html'));
 
