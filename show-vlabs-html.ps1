@@ -17,7 +17,7 @@ $result=invoke-command -session $session -scriptblock {
     $descriptions=Get-Content "$ScriptDirectory\cmdb\descriptions.tbl" | Out-String | ConvertFrom-StringData
 
     #conf
-    $conf=Get-Content "$ScriptDirectory\settings.cfg" | Out-String | ConvertFrom-StringData 
+    #$conf=Get-Content "$ScriptDirectory\settings.cfg" | Out-String | ConvertFrom-StringData 
 
     #get power status
     $result=get-vapp | foreach { $powerstate = @{} } { $powerstate[$_.Name] = $_.Status }
@@ -84,6 +84,8 @@ $result=invoke-command -session $session -scriptblock {
         }
       }      
       if ( $rdpurl -and $wanip ){ $InstanceState="Running" }
+
+      # LED Color
       $led="red"
       if ( $InstanceState -eq "Started" -or $InstanceState -eq "Running"){ $led="green" }
 

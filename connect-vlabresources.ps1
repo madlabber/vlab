@@ -10,19 +10,19 @@
 #>
 
 # Load config
-$conf=Get-Content "$PSScriptRoot\settings.cfg" | Out-String | ConvertFrom-StringData
+if (!$conf){$conf=Get-Content "$PSScriptRoot\settings.cfg" | Out-String | ConvertFrom-StringData}
 
 #region Import modules
   # NetApp Powershell Toolkit
-  $ncModule=get-module | where { $_.Name -eq "DataONTAP" }
-  if ( !$ncModule ) { 
+  if (!$ncModule) { 
+    $ncModule=get-module | where { $_.Name -eq "DataONTAP" }
     Import-Module "C:\Program Files (x86)\NetApp\NetApp PowerShell Toolkit\Modules\DataONTAP" 
   }
 	
-  # VMware PowerCLI module
-  $viModule=get-module | where { $_.Name -eq "VMware.VimAutomation.Core" }
-  if ( !$viModule ) {
-     import-module VMware.VimAutomation.Core
+# VMware PowerCLI module
+  if (!$viModule) {
+    $viModule=get-module | where { $_.Name -eq "VMware.VimAutomation.Core" }
+    import-module VMware.VimAutomation.Core
   }
 #endregion
 

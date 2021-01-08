@@ -18,7 +18,7 @@ $result=invoke-command -session $session -scriptblock {
     $descriptions=Get-Content "$ScriptDirectory\cmdb\descriptions.tbl" | Out-String | ConvertFrom-StringData
 
     #conf
-    $conf=Get-Content "$ScriptDirectory\settings.cfg" | Out-String | ConvertFrom-StringData 
+    #$conf=Get-Content "$ScriptDirectory\settings.cfg" | Out-String | ConvertFrom-StringData 
 
     #get power status
     $result=get-vapp | foreach { $powerstate = @{} } { $powerstate[$_.Name] = $_.Status }
@@ -29,7 +29,7 @@ $result=invoke-command -session $session -scriptblock {
     $instances=$vols | where { $_.Name -like "lab_*" } | where { ! $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name } | sort
 
     # Get the RDP password hash
-	$URI="http://localhost/myrtille/GetHash.aspx?password=$($conf.rdppassword)"
+	  $URI="http://localhost/myrtille/GetHash.aspx?password=$($conf.rdppassword)"
     $passwordhash=$(Invoke-WebRequest -URI "$URI").content
 
     # Build the output in HTML
@@ -39,9 +39,10 @@ $result=invoke-command -session $session -scriptblock {
     $output+="    <td width=20%  align=left ><u>Name</u></td>"
     $output+="    <td                       ><u>Description</u></td>"     
     $output+="    <td                       ><u>Status</u></td>" 
+    $output+="    <td            align=left ><u>Manage</u></td>"
+    $output+="    <td            align=left ><u>Datastore</u></td>"
     $output+="    <td            align=left ><u>Controls</u></td>"
-    $output+="    <td            align=left ><u>Authoring</u></td>"
-    $output+="    <td            align=left ><u>Session</u></td>"
+    $output+="    <td            align=left ><u>Sessions</u></td>"
  
     $output+="  </tr>"
     foreach($instance in $instances){
@@ -80,14 +81,15 @@ $result=invoke-command -session $session -scriptblock {
       #Action buttons:
       $output+="    <td>"
     # $output+="      <input type=button value=Start onclick=`"window.open('$starturl')`"/>"
+      $output+="      <button type=`"submit`" formaction=`"/import?$($instance.name)`">Import</button>"
+      $output+="      <button type=`"submit`" formaction=`"/newsnap?$($instance.name)`">Snapshot</button>"    
+      $output+="    </td><td>"      
+      $output+="      <button type=`"submit`" formaction=`"/authoron?$($instance.name)`">Mount</button>"
+      $output+="      <button type=`"submit`" formaction=`"/authoroff?$($instance.name)`">Unmount</button>"
+      $output+="    </td><td>"      
       $output+="      <button type=`"submit`" formaction=`"/start?$($instance.name)`">Start</button>"
       $output+="      <button type=`"submit`" formaction=`"/stop?$($instance.name)`">Stop</button>"
       $output+="      <button type=`"submit`" formaction=`"/kill?$($instance.name)`">Kill</button>"
-      $output+="    </td><td>"      
-      $output+="      <button type=`"submit`" formaction=`"/authoron?$($instance.name)`">Enable</button>"
-      $output+="      <button type=`"submit`" formaction=`"/authoroff?$($instance.name)`">Disable</button>"
-      $output+="      <button type=`"submit`" formaction=`"/import?$($instance.name)`">Import</button>"
-      $output+="      <button type=`"submit`" formaction=`"/newsnap?$($instance.name)`">Snapshot</button>"
       $output+="    </td>"
       $rdpurl=""
       if ( $powerstate[$instance.name] -eq "Started"){
