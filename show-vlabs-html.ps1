@@ -48,6 +48,7 @@ $result=invoke-command -session $session -scriptblock {
 	    if ( ! $parent ) { $parent=$instance.Name}
 	  
 	    # overrides
+      $overrides=""
 	    $labconf="$parent`.conf"
         if( Test-Path "$ScriptDirectory\cmdb\$labconf" ){
 	      $overrides=Get-Content "$ScriptDirectory\cmdb\$labconf" | Out-String | ConvertFrom-StringData }
