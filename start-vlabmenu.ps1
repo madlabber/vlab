@@ -55,7 +55,7 @@ function menu1vLabCatalog {
 		elseif ( "$selection" -eq "m" ) { menuMain }
 		elseif ( "$selection" -eq "r" ) { $vlabCatalog=.\show-vlabcatalog.ps1 }	
 		else {
-			$result=.\get-vlabcatalog.ps1 | where { $_.Name -eq "$selection" }
+			$result=get-ncvol | where { $_.Name -like "lab_*" } | where { ! $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name } | where { $_.Name -eq "$selection" }
 			if ( !$result ) { 
 				write-host "Lab "$selection" not found." 
 				sleep 2 
@@ -86,7 +86,7 @@ function menu2vLabInstances {
 		elseif ( "$selection" -eq "m" ) { menuMain }
 		elseif ( "$selection" -eq "r" ) { $vlabList=.\show-vlabs.ps1 }
 		else {
-			$result=.\get-vlabs.ps1 | where { $_.Name -eq "$selection" }
+			$result=get-ncvol | where { $_.Name -like "lab_*" } | where { $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name } | sort | where { $_.Name -eq "$selection" }
 			if ( !$result ) { 
 				write-host "Lab "$selection" not found." 
 				sleep 2 }
