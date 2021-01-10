@@ -17,13 +17,18 @@ $result=invoke-command -session $session -scriptblock {
     # Descriptions
     $descriptions=Get-Content "$ScriptDirectory\cmdb\descriptions.tbl" | Out-String | ConvertFrom-StringData
 
+    #conf
+    #$conf=Get-Content "$ScriptDirectory\settings.cfg" | Out-String | ConvertFrom-StringData 
+
     #get power status
     $result=get-vapp | foreach { $powerstate = @{} } { $powerstate[$_.Name] = $_.Status }
 
     # Gather data
     $vols=get-ncvol
-    #$labs=$vols | where { $_.Name -like "lab_*" } | where { ! $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name } | sort
-    $instances=$vols | where { $_.Name -like "lab_*" } | where { ! $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name } | sort
+    $instances=$vols `
+                 | where { $_.Name -like "lab_*" } `
+                 | where { $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name } `
+                 | sort
 
     # Get the RDP password hash
 	  $URI="http://localhost/myrtille/GetHash.aspx?password=$($conf.rdppassword)"
@@ -72,26 +77,22 @@ $result=invoke-command -session $session -scriptblock {
           $output+="  <td></td>"        
       }
 
-      if ("$($powerstate[$instance.Name])" -eq ""){$powerstate[$instance.Name]="Removed"}
-
       $output+='  <td valign=top><a href="/instance?'+$instance+'">'+$instance+'</a></td>' 
       $output+="  <td valign=top>"+$descriptions[$instance.Name]+"</td>"       
       $output+="  <td valign=top>"+$powerstate[$instance.Name]+"</td>" 
       #Action buttons:
-      $output+="    <td>"
-    # $output+="      <input type=button value=Start onclick=`"window.open('$starturl')`"/>"
+      $output+="    <td>"      # Manage
       $output+="      <button type=`"submit`" formaction=`"/import?$($instance.name)`">Import</button>"
-      $output+="      <button type=`"submit`" formaction=`"/destroy?$($instance.name)`">Remove</button>"
       $output+="      <button type=`"submit`" formaction=`"/newsnap?$($instance.name)`">Snapshot</button>" 
-      $output+="      <button type=`"submit`" formaction=`"/provision?$($instance.name)`">Provision</button>"         
-      $output+="    </td><td>"      
+      $output+="      <button type=`"submit`" formaction=`"/split?$($instance.name)`">Split</button>"          
+      $output+="    </td><td>" # Datastore    
       $output+="      <button type=`"submit`" formaction=`"/authoron?$($instance.name)`">Mount</button>"
       $output+="      <button type=`"submit`" formaction=`"/authoroff?$($instance.name)`">Unmount</button>"
-      $output+="    </td><td>"      
+      $output+="    </td><td>" # Controls     
       $output+="      <button type=`"submit`" formaction=`"/start?$($instance.name)`">Start</button>"
       $output+="      <button type=`"submit`" formaction=`"/stop?$($instance.name)`">Stop</button>"
       $output+="      <button type=`"submit`" formaction=`"/kill?$($instance.name)`">Kill</button>"
-      $output+="    </td>"
+      $output+="    </td>"     # Session
       $rdpurl=""
       if ( $powerstate[$instance.name] -eq "Started"){
         # Find the WAN IP of the gateway VM

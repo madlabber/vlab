@@ -105,7 +105,7 @@ app.get('/catalogadmin', (
   function (req,res){
     console.log(''+req.url);
     var psscript = require.resolve("./show-vlabcatalogadmin-html.ps1");   
-    var pgtitle = "Lab Catalog Administration";      
+    var pgtitle = "Catalog Administration";      
 
     res.writeHead(200, {'Content-Type': 'text/html'});
     res.write('<head><meta name="viewport" content="width=device-width, initial-scale=1"></head>');
@@ -121,10 +121,29 @@ app.get('/catalogadmin', (
     child.stdin.end();
 }));
 
+app.get('/instanceadmin', (
+  function (req,res){
+    console.log(''+req.url);
+    var psscript = require.resolve("./show-vlabinstanceadmin-html.ps1");   
+    var pgtitle = "Instance Administration";      
+
+    res.writeHead(200, {'Content-Type': 'text/html'});
+    res.write('<head><meta name="viewport" content="width=device-width, initial-scale=1"></head>');
+    res.write(''+navbar);
+    res.write('<b>'+pgtitle+':</b><hr><br>');
+
+    console.log(":: "+psscript);
+    var spawn = require("child_process").spawn,child;
+    child = spawn("powershell.exe",[psscript],{ cwd: process.cwd(), detached: false });
+    child.stdout.on("data",function(data){res.write(""+data)});
+    child.stderr.on("data",function(data){console.log(""+data)});
+    child.on("exit",function(){ res.end('<br><hr>:<hr>') });
+    child.stdin.end();
+}));
 app.get('/instances', (
   function (req,res){
     var psscript = require.resolve("./show-vlabs-html.ps1");   
-    var pgtitle = "Lab Instances";      
+    var pgtitle = "Instances";      
 
     console.log(''+req.url);    
     var url = require('url').parse(req.url)
@@ -154,10 +173,11 @@ app.get('/admin', (
     res.write('<head><meta name="viewport" content="width=device-width, initial-scale=1"></head>');
     res.write(''+navbar);
     res.write('<b>'+pgtitle+':</b><hr>');
-    res.write('<br><a href=/config>Configuration Settings</a>');
+    res.write('<br><a href=/catalogadmin>Catalog Administration</a>');
+    res.write('<br><br><a href=/instanceadmin>Instance Administration</a>');
+    res.write('<br><br><a href=/config>Configuration Settings</a>');
     res.write('<br><br><a href=https://'+vCenter+' target=_blank>VMware vCenter</a>');
     res.write('<br><br><a href=https://'+cluster_mgmt+' target=_blank>ONTAP System Manager</a>');
-    res.write('<br><br><a href=/catalogadmin>Catalog Administration</a>');
     res.end('<br><br><hr>:<hr>');
 
 }));
@@ -508,6 +528,33 @@ app.post('/newsnap', (
     child.stdin.end(); 
 }));
 
+app.post('/split', (
+  function (req, res) { 
+    console.log(''+req.url);  
+    var psscript = require.resolve("./start-vlabsplit.ps1"); 
+    var pgtitle = "Splitting Lab from Parent...";
+    var url = require('url').parse(req.url)
+    res.on('error', function(data){console.log(""+data)});
+
+    res.writeHead(200, {'Content-Type': 'text/html'});
+    res.write('<head><meta name="viewport" content="width=device-width, initial-scale=1"></head>');
+    res.write(''+navbar);
+    res.write('<b>'+pgtitle+'</b><hr><br>');
+
+    var spawn = require("child_process").spawn,child;
+    child = spawn("powershell.exe",[psscript,url.query],{ cwd: process.cwd(), detached: false });
+    child.stdout.on("data",function(data){
+      var strData = ''+data;
+      if (strData.trim() != '') {res.write(""+data+" <br>")}
+    });
+    child.stderr.on("data",function(data){console.log(""+data)});
+    child.on("exit",function(){
+      console.log("Script finished");
+      res.write('<script type="text/javascript">javascript:window.location=document.referrer;</script>');
+      res.end('Done.');
+    });
+    child.stdin.end(); 
+}));
 app.use(express.static('cmdb'));
 app.use(express.static('html'));
 

@@ -16,7 +16,7 @@ Param(
 )
 
 $session=.\get-vlabsession.ps1
-write-host "Destroying $vApp ..."
+write-host "Removing $vApp ..."
 $result=invoke-command -session $session -scriptblock {
     param($ScriptRoot,$vApp)
 

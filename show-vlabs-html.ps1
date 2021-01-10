@@ -24,7 +24,11 @@ $result=invoke-command -session $session -scriptblock {
 
     # Gather data
     $vols=get-ncvol
-    $instances=$vols | where { $_.Name -like "lab_*" } | where { $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name  -or $_.Name -like "lab__*" } | sort
+       $instances=$vols `
+                    | where { $_.Name -like "lab_*" } `
+                    | where { $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name `
+                               -or ( "$($powerstate[$_.Name])" -like "Started") } `
+                    | sort
 
     # Get the RDP password hash
 	  $URI="http://localhost/myrtille/GetHash.aspx?password=$($conf.rdppassword)"
