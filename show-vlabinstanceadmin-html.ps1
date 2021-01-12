@@ -84,7 +84,8 @@ $result=invoke-command -session $session -scriptblock {
       $output+="    <td>"      # Manage
       $output+="      <button type=`"submit`" formaction=`"/import?$($instance.name)`">Import</button>"
       $output+="      <button type=`"submit`" formaction=`"/newsnap?$($instance.name)`">Snapshot</button>" 
-      $output+="      <button type=`"submit`" formaction=`"/split?$($instance.name)`">Split</button>"          
+      $output+="      <button type=`"submit`" formaction=`"/split?$($instance.name)`">Split</button>" 
+      $output+="      <button type=`"submit`" formaction=`"/rename?$($instance.name)`">Rename</button>"               
       $output+="    </td><td>" # Datastore    
       $output+="      <button type=`"submit`" formaction=`"/authoron?$($instance.name)`">Mount</button>"
       $output+="      <button type=`"submit`" formaction=`"/authoroff?$($instance.name)`">Unmount</button>"

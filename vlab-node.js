@@ -579,7 +579,7 @@ app.all('/rename', (
     child.on("exit",function(){
       console.log("Script finished");
       //res.write('<script type="text/javascript">javascript:window.location=document.referrer;</script>');
-      res.end('');
+      res.end('.');
     });
     child.stdin.end(); 
 }));
