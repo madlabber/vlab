@@ -1,6 +1,6 @@
 var Service = require('node-windows').Service;
      // Create a new service object
-     // npm install -g node-windows
+     // npm install node-windows
      var svc = new Service({
           name:'vlab-service',
           description: 'vLAB Web Service',

@@ -43,6 +43,10 @@ else{
             $errText="$errText <b>Error: New name must begin with lab_ </b>"
         }
 
+        if($newName -match "[^a-zA-Z0-9_]") {
+            $errText="$errText <b>Error: Only letters, numbers and underscore (_) characters are allowed. </b><br>"            
+        }
+
         if( $(get-vapp $oldName | get-vm | where { $_.PowerState -ne "PoweredOff" }).count -gt 0)
         {
             $errText="$errText <b>Error: Lab must be stopped before it can be renamed. </b><br>"
