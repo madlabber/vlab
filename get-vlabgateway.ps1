@@ -21,7 +21,7 @@ $conf=Get-Content "$PSScriptRoot\settings.cfg" | Out-String | ConvertFrom-String
 
 $i = 1
 DO {
-$wanip=$(get-vapp $vApp | get-vm | where { $_.Name -eq "gateway" }).guest.IPAddress[0]
+$wanip=$(get-vapp $vApp | get-vm | where { $_.Name -like "*gateway*" }).guest.IPAddress[0]
 $i++
 } While ( $i -lt 120 -and "$wanip" -eq "" )
 write-host $wanip 

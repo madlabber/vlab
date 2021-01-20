@@ -77,7 +77,7 @@ $result=invoke-command -session $session -scriptblock {
       if ( $InstanceState -eq "Started"){
         # Find the WAN IP of the gateway VM
         $wanip=""
-        $gateway=get-vapp $instance.name | get-vm "gateway"
+        $gateway=get-vapp $instance.name | get-vm  | where { $_.Name -like "*gateway*" }
         if ( $gateway ) { 
             $wanip=$gateway.guest.IPAddress[0]
             $rdpurl="$($conf.rdphost)/Myrtille/?__EVENTTARGET=&__EVENTARGUMENT="

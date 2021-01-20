@@ -27,7 +27,7 @@ $result=invoke-command -session $session -scriptblock {
 
     # Find the WAN IP of the gateway VM
     $wanip=""
-    $gateway=$vApp | get-vm "gateway"
+    $gateway=$vApp | get-vm | where { $_.Name -like "*gateway*" }
     if ( $gateway ) { $wanip=$gateway.guest.IPAddress[0] }
 
     # Find the master snapshot and date
