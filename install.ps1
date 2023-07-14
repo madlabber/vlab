@@ -83,7 +83,7 @@ Write-Host "Installing express."
 npm install express
 
 #Install myrtille, be sure to change the default port to 8083
-$myrtille_url = "https://github.com/cedrozor/myrtille/releases/download/v2.9.1/Myrtille_2.9.1_x86_x64_Setup.msi"
+$myrtille_url = "https://github.com/cedrozor/myrtille/releases/download/v2.9.2/Myrtille_2.9.2_x86_x64_Setup.msi"
 #$myrtille_exe = "$PSScriptRoot\setup\Myrtille_2.3.1_x86_x64_Setup.exe"
 $myrtille_msi = "$PSScriptRoot\setup\Myrtille.msi"
 write-host "Downloading Myrtille."

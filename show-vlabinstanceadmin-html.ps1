@@ -52,8 +52,9 @@ $result=invoke-command -session $session -scriptblock {
 	  if ( ! $parent ) { $parent=$instance.Name}
 	  
 	  # overrides
-	  $labconf="$parent`.conf"
-	  $overrides=Get-Content "$ScriptDirectory\cmdb\$labconf" | Out-String | ConvertFrom-StringData 
+    if( Test-Path "$ScriptDirectory\cmdb\$labconf" ){
+      $overrides=Get-Content "$ScriptDirectory\cmdb\$labconf" | Out-String | ConvertFrom-StringData 
+    } 
 
 	  # RDP Credentials
 	  $rdpdomain=$conf.rdpdomain

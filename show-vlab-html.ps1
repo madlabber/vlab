@@ -17,6 +17,8 @@ $result=invoke-command -session $session -scriptblock {
     param($CURRENTVLAB,
           $ScriptDirectory
     )
+    # Load config
+    $conf=Get-Content "$ScriptDirectory\settings.cfg" | Out-String | ConvertFrom-StringData
 
     # Descriptions
     $descriptions=Get-Content "$ScriptDirectory\cmdb\descriptions.tbl" | Out-String | ConvertFrom-StringData
@@ -47,6 +49,12 @@ $result=invoke-command -session $session -scriptblock {
         ForEach ($Key in $overrides.Keys) {$conf.$Key = $overrides.$Key}	
     }
 	
+ #    write-host "$ScriptDirectory\cmdb\$labconf"
+	# write-host "$($conf.rdpprotocol)"
+ #    write-host "$($conf.rdpdomain)"
+ #    write-host "$($conf.rdpuser)"
+ #    write-host "$($conf.rdppassword)"
+
     # Get the RDP password hash
 	$URI="http://localhost/myrtille/GetHash.aspx?password=$($conf.rdppassword)"
     $rdphash=$(Invoke-WebRequest -URI "$URI").content
@@ -83,8 +91,11 @@ $result=invoke-command -session $session -scriptblock {
     $sumMemoryGB=0
     $sumCPUs=0
     foreach ($vm in $vms) {
+        $shortname=$vm.Name
+        if( $vm.Name.substring(0,$parent.length) -eq $parent ){
+            $shortname=$vm.Name.substring($parent.length+1,($vm.Name.length-$parent.length-1))}
         Write-Host   "<tr>"
-        Write-Host     "<td width=120px>"$vm.Name"</td>"
+        Write-Host     "<td width=120px>"$shortname"</td>"
         Write-Host     "<td>"$vm.PowerState"</td>"
         Write-Host     "<td align=center> "$vm.NumCpu"</td>"
         Write-Host     "<td> "$vm.MemoryGB"</td>"

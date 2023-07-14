@@ -17,7 +17,7 @@ $result=invoke-command -session $session -scriptblock {
     $descriptions=Get-Content "$ScriptDirectory\cmdb\descriptions.tbl" | Out-String | ConvertFrom-StringData
 
     #conf
-    #$conf=Get-Content "$ScriptDirectory\settings.cfg" | Out-String | ConvertFrom-StringData 
+    $conf=Get-Content "$ScriptDirectory\settings.cfg" | Out-String | ConvertFrom-StringData 
 
     #get power status
     $result=get-vapp | foreach { $powerstate = @{} } { $powerstate[$_.Name] = $_.Status }
@@ -30,9 +30,7 @@ $result=invoke-command -session $session -scriptblock {
                                -or ( "$($powerstate[$_.Name])" -like "Started") } `
                     | sort
 
-    # Get the RDP password hash
-	  $URI="http://localhost/myrtille/GetHash.aspx?password=$($conf.rdppassword)"
-    $passwordhash=$(Invoke-WebRequest -URI "$URI").content
+
 
     # Build the output in HTML
     # Table Header:
@@ -46,22 +44,34 @@ $result=invoke-command -session $session -scriptblock {
     $output+="    <td            align=left ><u>Session</u></td>"
     $output+="  </tr>"
 
+    # Get the RDP password hash
+    $URI="http://localhost/myrtille/GetHash.aspx?password=$($conf.rdppassword)"
+    $passwordhash=$(Invoke-WebRequest -URI "$URI").content
+
     #Assemble Table Rows
     foreach($instance in $instances){
 	    $parent=$instance.VolumeCloneAttributes.VolumeCloneParentAttributes.Name
 	    if ( ! $parent ) { $parent=$instance.Name}
 	  
+      # RDP Credentials
+      $rdpdomain=$conf.rdpdomain
+      $rdpuser=$conf.rdpuser
+      $rdppassword=$conf.rdppassword
+      $rdphash=$passwordhash
+
 	    # overrides
       $overrides=""
 	    $labconf="$parent`.conf"
         if( Test-Path "$ScriptDirectory\cmdb\$labconf" ){
-	      $overrides=Get-Content "$ScriptDirectory\cmdb\$labconf" | Out-String | ConvertFrom-StringData }
+	        $overrides=Get-Content "$ScriptDirectory\cmdb\$labconf" | Out-String | ConvertFrom-StringData 
+          $rdpdomain=$overrides.rdpdomain
+          $rdpuser=$overrides.rdpuser
+          $rdppassword=$overrides.rdppassword          
+          $URI="http://localhost/myrtille/GetHash.aspx?password=$($overrides.rdppassword)"
+          $rdphash=$(Invoke-WebRequest -URI "$URI").content
+      }
 
-	    # RDP Credentials
-	    $rdpdomain=$conf.rdpdomain
-	    $rdpuser=$conf.rdpuser
-	    $rdppassword=$conf.rdppassword
-	    $rdphash=$passwordhash
+
 	  
       # RDP Overrides
 	    if ("$($overrides.rdpdomain)" -ne ""){$rdpdomain=$overrides.rdpdomain}

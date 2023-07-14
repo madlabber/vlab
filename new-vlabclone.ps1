@@ -28,18 +28,20 @@ $result=invoke-command -session $session -scriptblock {
 ###
 #Write-Host "Authenticating."
 #region Settings
-#$conf=Get-Content "$PSScriptRoot\settings.cfg" | Out-String | ConvertFrom-StringData
-#& "$PSScriptRoot\Connect-vLabResources.ps1"
+#$conf=Get-Content "$ScriptRoot\settings.cfg" | Out-String | ConvertFrom-StringData
+#& "$ScriptRoot\Connect-vLabResources.ps1"
 
 # Settings
 [int]$newID=$conf.newID
-
+write-host $conf.vmwHost
 # Pick the host with the most free ram unless specified by config file or parameter
 Write-Host "Selecting VM Host."
 if ( ! $conf.vmwHost ){
- $conf.vmwHost=$(get-vmhost  | Select-Object Name, @{n='FreeMem';e={$_.MemoryTotalGB - $_.MemoryUsageGB}} | sort FreeMem | select-object -last 1).Name
+ $conf.vmwHost=$(get-cluster -name $conf.VICluster | get-vmhost  | Select-Object Name, @{n='FreeMem';e={$_.MemoryTotalGB - $_.MemoryUsageGB}} | sort FreeMem | select-object -last 1).Name
 }
 if ( $VMHost ) { $conf.vmwHost=$VMHost }
+
+write-host $conf.vmwHost
 
 # Use datastore from conf file, otherwise mount under vApp datastore
 if ( $VIDatastore ) { $conf.VIDatastore=$VIDatastore }

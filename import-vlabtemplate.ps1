@@ -24,7 +24,7 @@ $conf=Get-Content "$PSScriptRoot\settings.cfg" | Out-String | ConvertFrom-String
 
 # Pick the host with the most free ram unless specified by config file or parameter
 if ( ! $conf.vmwHost ){
-	$conf.vmwHost=$(get-vmhost  | Select-Object Name, @{n='FreeMem';e={$_.MemoryTotalGB - $_.MemoryUsageGB}} | sort FreeMem | select-object -last 1).Name
+	$conf.vmwHost=$(get-cluster -name $conf.VICluster | get-vmhost  | Select-Object Name, @{n='FreeMem';e={$_.MemoryTotalGB - $_.MemoryUsageGB}} | sort FreeMem | select-object -last 1).Name
 }
 if ( $VMHost ) { $conf.vmwHost=$VMHost }
 

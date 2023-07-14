@@ -48,7 +48,9 @@ $result=invoke-command -session $session -scriptblock {
 	  
 	  # overrides
 	  $labconf="$parent`.conf"
-	  $overrides=Get-Content "$ScriptDirectory\cmdb\$labconf" | Out-String | ConvertFrom-StringData 
+      if( Test-Path "$ScriptDirectory\cmdb\$labconf" ){
+        $overrides=Get-Content "$ScriptDirectory\cmdb\$labconf" | Out-String | ConvertFrom-StringData 
+      }
 
 	  # RDP Credentials
 	  $rdpdomain=$conf.rdpdomain
@@ -72,7 +74,7 @@ $result=invoke-command -session $session -scriptblock {
           $output+="  <td></td>"        
       }
 
-      if ("$($powerstate[$instance.Name])" -eq ""){$powerstate[$instance.Name]="Removed"}
+      if ("$($powerstate[$instance.Name])" -eq ""){$powerstate[$instance.Name]="Disabled"}
 
       $output+='  <td valign=top><a href="/instance?'+$instance+'">'+$instance+'</a></td>' 
       $output+="  <td valign=top>"+$descriptions[$instance.Name]+"</td>"       
@@ -80,8 +82,8 @@ $result=invoke-command -session $session -scriptblock {
       #Action buttons:
       $output+="    <td>"
     # $output+="      <input type=button value=Start onclick=`"window.open('$starturl')`"/>"
-      $output+="      <button type=`"submit`" formaction=`"/import?$($instance.name)`">Import</button>"
-      $output+="      <button type=`"submit`" formaction=`"/destroy?$($instance.name)`">Remove</button>"
+      $output+="      <button type=`"submit`" formaction=`"/import?$($instance.name)`">Enable</button>"
+      $output+="      <button type=`"submit`" formaction=`"/destroy?$($instance.name)`">Disable</button>"
       $output+="      <button type=`"submit`" formaction=`"/newsnap?$($instance.name)`">Snapshot</button>"
       $output+="      <button type=`"submit`" formaction=`"/rename?$($instance.name)`">Rename</button>"  
       $output+="      <button type=`"submit`" formaction=`"/provision?$($instance.name)`">Provision</button>"         
