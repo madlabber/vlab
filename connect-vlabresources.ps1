@@ -15,8 +15,8 @@ if (!$conf){$conf=Get-Content "$PSScriptRoot\settings.cfg" | Out-String | Conver
 #region Import modules
   # NetApp Powershell Toolkit
   if (!$ncModule) { 
-    $ncModule=get-module | where { $_.Name -eq "DataONTAP" }
-    Import-Module "C:\Program Files (x86)\NetApp\NetApp PowerShell Toolkit\Modules\DataONTAP" 
+    $ncModule=get-module | where { $_.Name -eq "NetApp.ONTAP" }
+    Import-Module NetApp.ONTAP 
   }
 	
 # VMware PowerCLI module
@@ -44,3 +44,4 @@ if (!$conf){$conf=Get-Content "$PSScriptRoot\settings.cfg" | Out-String | Conver
 		$result=$(Connect-NcController $conf.cluster_mgmt -vserver $conf.vserver -credential $NCCred )
 	}
 #endregion
+

@@ -23,7 +23,7 @@ $result=invoke-command -session $session -scriptblock {
     $result=get-vapp | foreach { $powerstate = @{} } { $powerstate[$_.Name] = $_.Status }
 
     # Gather data
-    $vols=get-ncvol
+    $vols=get-ncvol -vserver $conf.vserver -WarningAction silentlyContinue
        $instances=$vols `
                     | where { $_.Name -like "lab_*" } `
                     | where { $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name `
@@ -46,7 +46,7 @@ $result=invoke-command -session $session -scriptblock {
 
     # Get the RDP password hash
     $URI="http://localhost/myrtille/GetHash.aspx?password=$($conf.rdppassword)"
-    $passwordhash=$(Invoke-WebRequest -URI "$URI").content
+    $passwordhash=$(Invoke-WebRequest -URI "$URI" -UseBasicParsing).content
 
     #Assemble Table Rows
     foreach($instance in $instances){
@@ -68,7 +68,7 @@ $result=invoke-command -session $session -scriptblock {
           $rdpuser=$overrides.rdpuser
           $rdppassword=$overrides.rdppassword          
           $URI="http://localhost/myrtille/GetHash.aspx?password=$($overrides.rdppassword)"
-          $rdphash=$(Invoke-WebRequest -URI "$URI").content
+          $rdphash=$(Invoke-WebRequest -URI "$URI" -UseBasicParsing).content
       }
 
 
@@ -79,7 +79,7 @@ $result=invoke-command -session $session -scriptblock {
 	    if ("$($overrides.rdppassword)" -ne ""){
 	      $rdppassword=$overrides.rdppassword
 		    $URI="http://localhost/myrtille/GetHash.aspx?password=$($overrides.rdppassword)"
-        $rdphash=$(Invoke-WebRequest -URI "$URI").content
+        $rdphash=$(Invoke-WebRequest -URI "$URI" -UseBasicParsing).content
 	    }
 
       $rdpurl=""

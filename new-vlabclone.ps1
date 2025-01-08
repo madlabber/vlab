@@ -72,7 +72,7 @@ if (! $snap){
 
 # FlexClone the vApp volume
 Write-Host "..Creating Volume FlexClone /$VIDatastore/$vAppNew"
-$result=New-NcVolClone $vAppNew $vApp -JunctionPath "/$VIDatastore/$vAppNew" -ParentSnapshot $SnapshotName
+$result=New-NcVolClone $vAppNew $vApp -JunctionPath "/$VIDatastore/$vAppNew" -ParentSnapshot $SnapshotName -vserver $conf.vserver
 
 # Create New vApp
 write-host "..Creating vApp $vappnew"

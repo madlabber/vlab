@@ -57,7 +57,7 @@ $result=invoke-command -session $session -scriptblock {
 
     # Get the RDP password hash
 	$URI="http://localhost/myrtille/GetHash.aspx?password=$($conf.rdppassword)"
-    $rdphash=$(Invoke-WebRequest -URI "$URI").content
+    $rdphash=$(Invoke-WebRequest -URI "$URI" -UseBasicParsing).content
 
     # RDP URI link for old Safari and iOS
     $rdpuri="rdp://full%20address=s:$($wanip):3389&audiomode=i:2&disable%20themes=i:1"

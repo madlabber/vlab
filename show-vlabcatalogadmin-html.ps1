@@ -21,7 +21,7 @@ $result=invoke-command -session $session -scriptblock {
     $result=get-vapp | foreach { $powerstate = @{} } { $powerstate[$_.Name] = $_.Status }
 
     # Gather data
-    $vols=get-ncvol
+    $vols=get-ncvol -WarningAction silentlyContinue
     #$labs=$vols | where { $_.Name -like "lab_*" } | where { ! $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name } | sort
     $instances=$vols | where { $_.Name -like "lab_*" } | where { ! $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name } | sort
 

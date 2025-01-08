@@ -20,22 +20,10 @@ if (  $psversiontable.PSVersion.Major -lt 5 ){
     break
 }
 
-# Install PSTK (Manual step)
-if ( $(get-module -listavailable | where { $_.Name -eq "DataONTAP" }).count -eq 0 ){
-    if(!(Test-Path "C:\Windows\Temp\NetApp_PowerShell_Toolkit_9.8.0.msi" )){
-        write-error "The NetApp Powershell Toolkit (PSTK) is required."
-        write-error "The PSTK is available from the toolchest area support.netapp.com"
-        break
-    }
-    else {
-        Write-host "Installing PSTK"
-        Start-Process "msiexec.exe" -argumentlist "/qb /l* C:\Windows\Temp\pstk-log.txt /i C:\Windows\Temp\NetApp_PowerShell_Toolkit_9.8.0.msi" -Wait
-    }
-}
-
-# Install PowerCLI
+# Install Powershell Modules
 set-psrepository PSGallery  -InstallationPolicy trusted
 Install-Module -Name VMware.PowerCLI
+Install-Module -Name NetApp.ONTAP
 
 # Configure Powershell unrestricted execution policy
 set-executionpolicy unrestricted
@@ -59,8 +47,6 @@ If(!(Test-Path "$PSScriptRoot\setup")) { New-Item -Path "$PSScriptRoot\setup" -N
 [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
 
 # Install Node.js
-#$nodejs_url = "https://nodejs.org/dist/v10.15.3/node-v10.15.3-x64.msi"
-#$nodejs_exe = "$PSScriptRoot\setup\node-v10.15.3-x64.msi"
 $nodejs_url = "https://nodejs.org/dist/v14.15.3/node-v14.15.3-x64.msi"
 $nodejs_exe = "$PSScriptRoot\setup\node-v14.15.3-x64.msi"
 if(!(Test-Path "$nodejs_exe")){

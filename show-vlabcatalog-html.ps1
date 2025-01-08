@@ -29,10 +29,10 @@ $result=invoke-command -session $session -scriptblock {
         $descriptions=Get-Content "$ScriptDirectory\cmdb\descriptions.tbl" | Out-String | ConvertFrom-StringData
 
         # Catalog entries are vols that are not flexclones
-        $vols=get-ncvol
-        $labs=$vols | where { $_.Name -like "lab_*" } | where { ! $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name } | where { $_.Name -notlike "lab__*" }
-        $instances=$vols | where { $_.Name -like "lab_*" } | where { $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name -or $_.Name -like "lab__*" }
-        #$vApps=get-vapp |  where { $_.Name -like "lab_*" } 
+        $vols=get-ncvol -volume "lab_*" -vserver $conf.vserver -WarningAction silentlyContinue | sort Name
+        $labs=$vols | where { ! $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name } #| where { $_.Name -notlike "lab__*" } 
+        $instances=$vols | where { $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name }#-or $_.Name -like "lab__*" }
+
         # reset the timer
         $timer = [System.Diagnostics.Stopwatch]::StartNew()
     }
