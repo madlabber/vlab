@@ -27,7 +27,7 @@ $result=invoke-command -session $session -scriptblock {
 
     # Get the RDP password hash
 	  $URI="http://localhost/myrtille/GetHash.aspx?password=$($conf.rdppassword)"
-    $passwordhash=$(Invoke-WebRequest -URI "$URI").content
+    $passwordhash=$(Invoke-WebRequest -URI "$URI" -UseBasicParsing).content
 
     # Build the output in HTML
     $output='<form action="" method="post"><table>'

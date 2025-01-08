@@ -20,7 +20,7 @@ $descriptions=Get-Content "$PSScriptRoot\cmdb\descriptions.tbl" | Out-String | C
 #get power status
 $result=get-vapp | foreach { $powerstate = @{} } { $powerstate[$_.Name] = $_.Status }
 # List volumes that start with lab_
-$labvols=get-ncvol | where { $_.Name -like "lab_*" } | where { ! $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name }
+$labvols=get-ncvol -volume "lab_*" -vserver $conf.vserver -WarningAction silentlyContinue | where { ! $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name }
 #$report | format-table
 $labvols | FT 	@{Label="Name";Expression={$_.Name};width=20}, 
 #				@{Label="Status";Expression={$powerstate[$_.Name]};width=8;align='left'}, 

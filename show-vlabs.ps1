@@ -17,7 +17,7 @@ $conf=Get-Content "$PSScriptRoot\settings.cfg" | Out-String | ConvertFrom-String
 #get power status
 $result=get-vapp | foreach { $powerstate = @{} } { $powerstate[$_.Name] = $_.Status }
 # List volumes that start with lab_ that are NOT flexclones
-$labvols=get-ncvol | where { $_.Name -like "lab_*" } | where { $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name } | sort
+$labvols=get-ncvol -vserver $conf.vserver -volume "lab_*" -WarningAction silentlyContinue | where { $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name } | sort
 #$report | format-table
 $labvols | FT 	@{Label="Name";Expression={$_.Name};width=24}, 
 				@{Label="Status";Expression={$powerstate[$_.Name]};width=8;align='left'}, 

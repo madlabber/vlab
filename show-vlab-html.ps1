@@ -33,7 +33,7 @@ $result=invoke-command -session $session -scriptblock {
     if ( $gateway ) { $wanip=$gateway.guest.IPAddress[0] }
 
     # Find the master snapshot and date
-    $labvol=get-ncvol "$CURRENTVLAB" 
+    $labvol=get-ncvol -volume "$CURRENTVLAB" -vserver $conf.vserver -WarningAction silentlyContinue
     $relsnap=$labvol | get-ncsnapshot | where { $_.Name -eq "master" }
     if ( $relsnap ) { $reldate=$relsnap.Created }
     else { $reldate = "-" }
