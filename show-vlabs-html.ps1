@@ -20,17 +20,14 @@ $result=invoke-command -session $session -scriptblock {
     $conf=Get-Content "$ScriptDirectory\settings.cfg" | Out-String | ConvertFrom-StringData 
 
     #get power status
-    $result=get-vapp | foreach { $powerstate = @{} } { $powerstate[$_.Name] = $_.Status }
+    $result=get-vapp -name "lab_*" | foreach { $powerstate = @{} } { $powerstate[$_.Name] = $_.Status }
 
     # Gather data
-    $vols=get-ncvol -vserver $conf.vserver -WarningAction silentlyContinue
+    $vols=get-ncvol -name "lab_*" -vserver $conf.vserver -WarningAction silentlyContinue
        $instances=$vols `
-                    | where { $_.Name -like "lab_*" } `
                     | where { $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name `
                                -or ( "$($powerstate[$_.Name])" -like "Started") } `
                     | sort
-
-
 
     # Build the output in HTML
     # Table Header:
@@ -50,8 +47,8 @@ $result=invoke-command -session $session -scriptblock {
 
     #Assemble Table Rows
     foreach($instance in $instances){
-	    $parent=$instance.VolumeCloneAttributes.VolumeCloneParentAttributes.Name
-	    if ( ! $parent ) { $parent=$instance.Name}
+	  $parent=$instance.VolumeCloneAttributes.VolumeCloneParentAttributes.Name
+	  if ( ! $parent ) { $parent=$instance.Name}
 	  
       # RDP Credentials
       $rdpdomain=$conf.rdpdomain
@@ -59,28 +56,21 @@ $result=invoke-command -session $session -scriptblock {
       $rdppassword=$conf.rdppassword
       $rdphash=$passwordhash
 
-	    # overrides
+	  # If there is a lav specific config file it overrides the global defaults
       $overrides=""
-	    $labconf="$parent`.conf"
-        if( Test-Path "$ScriptDirectory\cmdb\$labconf" ){
-	        $overrides=Get-Content "$ScriptDirectory\cmdb\$labconf" | Out-String | ConvertFrom-StringData 
-          $rdpdomain=$overrides.rdpdomain
-          $rdpuser=$overrides.rdpuser
-          $rdppassword=$overrides.rdppassword          
-          $URI="http://localhost/myrtille/GetHash.aspx?password=$($overrides.rdppassword)"
-          $rdphash=$(Invoke-WebRequest -URI "$URI" -UseBasicParsing).content
+	  $labconf="$parent`.conf"
+      if( Test-Path "$ScriptDirectory\cmdb\$labconf" ){
+	    $overrides=Get-Content "$ScriptDirectory\cmdb\$labconf" | Out-String | ConvertFrom-StringData 
+
+        # Apply RDP Overrides
+        if ("$($overrides.rdpdomain)" -ne ""){$rdpdomain=$overrides.rdpdomain}
+        if ("$($overrides.rdpuser)" -ne ""){$rdpuser=$overrides.rdpuser}
+        if ("$($overrides.rdppassword)" -ne ""){
+            $rdppassword=$overrides.rdppassword
+            $URI="http://localhost/myrtille/GetHash.aspx?password=$($overrides.rdppassword)"
+            $rdphash=$(Invoke-WebRequest -URI "$URI" -UseBasicParsing).content
+        }
       }
-
-
-	  
-      # RDP Overrides
-	    if ("$($overrides.rdpdomain)" -ne ""){$rdpdomain=$overrides.rdpdomain}
-	    if ("$($overrides.rdpuser)" -ne ""){$rdpuser=$overrides.rdpuser}
-	    if ("$($overrides.rdppassword)" -ne ""){
-	      $rdppassword=$overrides.rdppassword
-		    $URI="http://localhost/myrtille/GetHash.aspx?password=$($overrides.rdppassword)"
-        $rdphash=$(Invoke-WebRequest -URI "$URI" -UseBasicParsing).content
-	    }
 
       $rdpurl=""
       $InstanceState=$powerstate[$instance.name]

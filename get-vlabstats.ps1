@@ -16,12 +16,13 @@ $result=invoke-command -session $session -scriptblock {
     #Collect Objects  
     $conf=Get-Content "$ScriptRoot\settings.cfg" | Out-String | ConvertFrom-StringData  
     $descriptions=Get-Content "$ScriptRoot\cmdb\descriptions.tbl" | Out-String | ConvertFrom-StringData            
-    $vols=get-ncvol
-    $labs=$vols | where { $_.Name -like "lab_*" } | where { ! $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name }
-    $instances=$vols | where { $_.Name -like "lab_*" } | where { $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name }
+    $vols=get-ncvol -volume "lab_*" -vserver $conf.vserver -WarningAction silentlyContinue | sort Name
+    $labs=$vols | where { ! $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name }
+    $instances=$vols | where { $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name }
     $VMHosts=get-cluster $conf.VICluster | get-vmhost
     $NCAggrs=$(foreach ($aggr in $(($vols | where  {$_.Name -like "lab_*"}).aggregate | sort-object | get-unique)){get-ncaggr $aggr})
-    $running=get-vapp | where { $_.Name -like "lab_*" } | where {$_.Status -eq "Started"}
+    $vApps=get-vapp | where { $_.Name -like "lab_*" }
+    $running=$vApps | where {$_.Status -eq "Started"}
 
     # Measure Objects
     $CpuUsageMhz=($VMHosts | measure-object -property CpuUsageMhz -sum).sum

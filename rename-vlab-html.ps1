@@ -47,16 +47,16 @@ else{
             $errText="$errText <b>Error: Only letters, numbers and underscore (_) characters are allowed. </b><br>"            
         }
 
-        if( $(get-vapp $oldName | get-vm | where { $_.PowerState -ne "PoweredOff" }).count -gt 0)
+        if( $(get-vapp | where { $_.Name -eq $oldName } | get-vm | where { $_.PowerState -ne "PoweredOff" }).count -gt 0)
         {
             $errText="$errText <b>Error: Lab must be stopped before it can be renamed. </b><br>"
         }
 
-        if( $(get-vapp $newName).count -gt 0){           
+        if( $(get-vapp | where { $_.Name -eq $newName }).count -gt 0){           
             $errText="$errText <b>Error: $newName alredy exists. </b><br>"
         }
 
-        if( $(get-vapp $oldName).count -eq 0){
+        if( $(get-vapp | where { $_.Name -eq $oldName }).count -eq 0){
             $errText="$errText <b>Error: $oldName does not exist. </b><br>" 
         }
 

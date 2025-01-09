@@ -47,6 +47,7 @@ $result=invoke-command -session $session -scriptblock {
     # remove the volume if it is a clone
     $result=get-ncvol $vApp | where { $_.VolumeCloneAttributes.VolumeCloneParentAttributes.Name } | set-ncvol -offline | remove-ncvol -confirm:$false
 
+    $timer=$null
 } -ArgumentList $PSScriptRoot,$vApp
 
 # Disconnect from the session

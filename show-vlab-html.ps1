@@ -34,7 +34,8 @@ $result=invoke-command -session $session -scriptblock {
 
     # Find the master snapshot and date
     $labvol=get-ncvol -volume "$CURRENTVLAB" -vserver $conf.vserver -WarningAction silentlyContinue
-    $relsnap=$labvol | get-ncsnapshot | where { $_.Name -eq "master" }
+    #$relsnap=$labvol | get-ncsnapshot | where { $_.Name -eq "master" }
+    $relsnap=get-ncsnapshot -vserver $conf.vserver -volume "$CURRENTVLAB" | where { $_.Name -eq "master" }
     if ( $relsnap ) { $reldate=$relsnap.Created }
     else { $reldate = "-" }
 

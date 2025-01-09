@@ -63,16 +63,18 @@ if ( ! $vAppNew ) {
 # Feedback
 Write-Host "Provisioning $vAppNew from $vApp on"$conf.vmwHost
 
-$SnapshotName="master"
-$snap=get-ncsnapshot -volume "$vApp" "master"
+# Find or create a snapshot for the flexclone
+$snap=get-ncsnapshot -volume "$vApp" -vserver $conf.vserver  | where { $_.Name -eq "master" }
 if (! $snap){
-	$SnapshotName=get-date -format o
-	$snap=new-ncsnapshot -volume "$vApp" "$SnapshotName"
+      $snap=new-ncsnapshot -volume "$vApp" "$(get-date -format o)"
 }
+write-host "Source Snapshot: $snap"
 
 # FlexClone the vApp volume
 Write-Host "..Creating Volume FlexClone /$VIDatastore/$vAppNew"
-$result=New-NcVolClone $vAppNew $vApp -JunctionPath "/$VIDatastore/$vAppNew" -ParentSnapshot $SnapshotName -vserver $conf.vserver
+#$result=New-NcVolClone $vAppNew $vApp -JunctionPath "/$VIDatastore/$vAppNew" -ParentSnapshot $SnapshotName -vserver $conf.vserver
+$result=New-NcVolClone $vAppNew $vApp -JunctionPath "/$VIDatastore/$vAppNew" -ParentSnapshot $snap -vserver $conf.vserver
+
 
 # Create New vApp
 write-host "..Creating vApp $vappnew"
@@ -95,7 +97,7 @@ foreach($srcPortGroup in $( $srcApp | get-vm | get-virtualportgroup | where { $_
 	# Created portgroup lab_%name%_%suffix%
 	$pgName="$vAppNew"+$srcPortGroup.name.substring($vApp.length)
 	Write-Host "....$srcPortGroup => $pgName"
-	$result=$virtualSwitches | new-virtualportgroup -name $pgName -vlanid $pgVLan
+	$result=$virtualSwitches | new-virtualportgroup -name $pgName -vlanid $pgVLan -ErrorAction SilentlyContinue
 }
 
 
@@ -140,26 +142,6 @@ foreach($srcPortGroup in $srcPortGroups){
 }
 write-host "..Connected WAN Nics"
 $result=$WANAdapters | set-networkadapter -NetworkName $conf.VIPortgroup -confirm:$false
-
-#foreach ($adapter in $networkAdapters){
-#	$pgName="$vAppNew"+$adapter.NetworkName.substring($vApp.length)
-#	$result=$adapter | set-networkadapter -networkName "$pgName"
-#}
-#$result=$networkAdapters | set-networkadapter -NetworkName "$vAppNew"+$_.NetworkName.substring($vApp.length)
-#$networkAdapters
-
-#foreach($srcPortGroup in $($srcApp | get-vm | get-virtualportgroup | where { $_.Name -like "$vApp*" })) {
-#	$pgName="$vAppNew"+$srcPortGroup.name.substring($vApp.length)
-#	write-host "....$srcPortGroup => $pgName"
-#	$result=$networkAdapters | where {$_.NetworkName -eq $srcPortGroup } | set-networkadapter -NetworkName "$pgName" -confirm:$false
-#}
-
-# Connect the WAN interface
-#$oldWAN=$(get-vapp $vAppNew | get-vm | ?{ $_.Name -eq "gateway"} | get-networkadapter | ?{ $_.NetworkName -notlike "$vAppNew*" }).NetworkName
-#$newWAN=Get-VirtualPortGroup -Name $conf.VIPortgroup
-#foreach($srcPortGroup in $(get-vapp $vApp | get-vm | get-virtualportgroup | where { $_.Name -eq $oldWAN })) {
-#	$result=get-vapp $vAppNew | get-vm | get-networkadapter | where {$_.NetworkName -eq $srcPortGroup } | set-networkadapter -NetworkName $conf.VIPortgroup -confirm:$false
-#}
 
 # Fixup any named pipe serial ports
 write-host "..Configuring serial ports"
