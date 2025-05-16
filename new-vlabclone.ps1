@@ -89,7 +89,7 @@ if ( $vAppTrunks.count -gt 0 ) {
 
 	# For each dedicated vSwitch on the source vApp create a dedicated vSwith for the new vApp
 	$vswitches=$(get-vapp -name "$vApp" | get-vm | ?{ $_.Name -notlike "*gateway*" } | get-virtualswitch)
-	foreach($vswitch in $vswitches){
+    foreach($vswitch in $vswitches){
 		#vswitch name is in format $vApp_vssName
 	    if( $vswitch.Name -like "$vApp*" ){ $vswitchnew = $vAppNew+$vswitch.Name.substring($vApp.Length) }
 		#otherwise its just vssName
@@ -104,13 +104,13 @@ if ( $vAppTrunks.count -gt 0 ) {
 		#now replicate the port groups
 		$portgroups=$vswitch | Get-VirtualPortGroup
         foreach( $pg in $portgroups){
-			# pg.name is in format $vApp_pgName
-			if( $pg.Name -like "$vApp*" ){ $pgnew = $vAppNew+$pg.Name.substring($vApp.Length)}
-			#otherwise its just pgName
-			else { $pgnew = $vAppNew+"_"+$pg.Name }
+            # pg.name is in format $vApp_pgName
+            if( $pg.Name -like "$vApp*" ){ $pgnew = $vAppNew+$pg.Name.substring($vApp.Length)}
+            #otherwise its just pgName
+            else { $pgnew = $vAppNew+"_"+$pg.Name }
 
-			write-host "..creating portGroup: $pg => $pgnew"
-			$newvss | new-virtualportgroup -name "$pgNew" -VLanId $pg.VLanId -ErrorAction SilentlyContinue
+            write-host "..creating portGroup: $pg => $pgnew"
+            $newvss | new-virtualportgroup -name "$pgNew" -VLanId $pg.VLanId -ErrorAction SilentlyContinue
 
 		}
 	}
@@ -175,7 +175,7 @@ $networkAdapters=$cloneVMs | get-networkadapter
 $WANAdapters=$networkAdapters | where { $_.NetworkName -notlike "$vApp*"}
 foreach($srcPortGroup in $srcPortGroups){
 	# pg.name is in format $vApp_pgName
-	if( $srcPortGroup.Name -like "$vApp*" ){ $pgnew = $vAppNew+$srcPortGroup.Name.substring($vApp.Length)}
+	if( $srcPortGroup.Name -like "$vApp*" ){ $pgName = $vAppNew+$srcPortGroup.Name.substring($vApp.Length)}
 	#otherwise its just pgName
 	else { $pgName = $vAppNew+"_"+$srcPortGroup.Name }
 
