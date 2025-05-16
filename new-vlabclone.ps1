@@ -75,31 +75,68 @@ Write-Host "..Creating Volume FlexClone /$VIDatastore/$vAppNew"
 #$result=New-NcVolClone $vAppNew $vApp -JunctionPath "/$VIDatastore/$vAppNew" -ParentSnapshot $SnapshotName -vserver $conf.vserver
 $result=New-NcVolClone $vAppNew $vApp -JunctionPath "/$VIDatastore/$vAppNew" -ParentSnapshot $snap -vserver $conf.vserver
 
-
 # Create New vApp
 write-host "..Creating vApp $vappnew"
 $cloneApp=New-VApp -Name $vAppNew -Location (Get-Cluster $conf.VICluster)
 $srcApp=Get-vApp $vApp
 
-# Create New portgroups
-# Hosts have a portgroup limit of 500ish
-write-host "..Creating portgroups"
-[int]$pgVLan=$conf.vlanbase
-$virtualSwitches=get-cluster | ?{ $_.Name -eq $conf.VICluster } | get-vmhost | get-virtualswitch | ?{ $_.Name -eq $conf.vswitch}
-$portGroups=$virtualSwitches | get-virtualportgroup
-foreach($srcPortGroup in $( $srcApp | get-vm | get-virtualportgroup | where { $_.Name -like "$vApp*" })) {
-	#Find next unused VLAN
-	DO {
-		$pgVLan++
-		$result=$portGroups | where { $_.VLanID -eq $pgVLan }
-	} while ( $result )
+# Determine if lab is portgroup backed or vSwitch backed
+# If any of the portgroups are set to VLAN 4095, the lab uses virtual guest tagging, which requires dedicated vSwitch(es)
+$vAppTrunks=get-vapp -name "$vApp" | get-vm | get-virtualportgroup | ?{ $_.VLanId -like 4095 }
+if ( $vAppTrunks.count -gt 0 ) {
+	$vSwitchBacked=$true
+	Write-Host "vSwitch Backed: $vSwitchBacked"
 
-	# Created portgroup lab_%name%_%suffix%
-	$pgName="$vAppNew"+$srcPortGroup.name.substring($vApp.length)
-	Write-Host "....$srcPortGroup => $pgName"
-	$result=$virtualSwitches | new-virtualportgroup -name $pgName -vlanid $pgVLan -ErrorAction SilentlyContinue
+	# For each dedicated vSwitch on the source vApp create a dedicated vSwith for the new vApp
+	$vswitches=$(get-vapp -name "$vApp" | get-vm | ?{ $_.Name -notlike "*gateway*" } | get-virtualswitch)
+	foreach($vswitch in $vswitches){
+		#vswitch name is in format $vApp_vssName
+	    if( $vswitch.Name -like "$vApp*" ){ $vswitchnew = $vAppNew+$vswitch.Name.substring($vApp.Length) }
+		#otherwise its just vssName
+		else { $vswitchnew = $vAppNew+"_"+$vswitch.Name }
+
+		#create vswitch on all hosts in cluster.  limited to ~127 standard vswitches so this approach has scaling limits
+		write-host "..Creating vSwitch: $vswitchnew"
+		$newvss=get-cluster $conf.VICluster | get-vmhost | new-virtualswitch -name "$vswitchnew" -mtu 9000
+
+		$newvss | Get-SecurityPolicy | Set-SecurityPolicy -MacChanges $true -AllowPromiscuous $true -ForgedTransmits $true
+
+		#now replicate the port groups
+		$portgroups=$vswitch | Get-VirtualPortGroup
+        foreach( $pg in $portgroups){
+			# pg.name is in format $vApp_pgName
+			if( $pg.Name -like "$vApp*" ){ $pgnew = $vAppNew+$pg.Name.substring($vApp.Length)}
+			#otherwise its just pgName
+			else { $pgnew = $vAppNew+"_"+$pg.Name }
+
+			write-host "..creating portGroup: $pg => $pgnew"
+			$newvss | new-virtualportgroup -name "$pgNew" -VLanId $pg.VLanId -ErrorAction SilentlyContinue
+
+		}
+	}
 }
+else {
+	$vSwitchBacked=$false
+	Write-Host "vSwitch Backed: $vSwitchBacked"
+	# Create New portgroups
+	# Hosts have a portgroup limit of 500ish
+	[int]$pgVLan=$conf.vlanbase
 
+	$virtualSwitches=get-cluster | ?{ $_.Name -eq $conf.VICluster } | get-vmhost | get-virtualswitch | ?{ $_.Name -eq $conf.vswitch}
+	$portGroups=$virtualSwitches | get-virtualportgroup
+	foreach($srcPortGroup in $( $srcApp | get-vm | get-virtualportgroup | where { $_.Name -like "$vApp*" })) {
+		#Find next unused VLAN
+		DO {
+			$pgVLan++
+			$result=$portGroups | where { $_.VLanID -eq $pgVLan }
+		} while ( $result )
+
+		# Created portgroup lab_%name%_%suffix%
+		$pgName="$vAppNew"+$srcPortGroup.name.substring($vApp.length)
+		Write-Host "..creating portgroup: $srcPortGroup => $pgName"
+		$result=$virtualSwitches | new-virtualportgroup -name $pgName -vlanid $pgVLan -ErrorAction SilentlyContinue
+	}
+}
 
 Write-Host "..Searching for VMs"
 # Searches for .VMX Files in datastore variable
@@ -131,17 +168,23 @@ foreach($VMXFolder in $SearchResult) {
 # Connect nics to the new portgroups
 write-host "..Connecting LAN Nics"
 $cloneVMs=$cloneApp | get-vm
-$srcPortGroups=$cloneVMs | get-virtualportgroup | where { $_.Name -like "$vApp*" }
+#$srcPortGroups=$cloneVMs | get-virtualportgroup | where { $_.Name -like "$vApp*" }
+$srcPortGroups=$cloneVMs | ?{ $_.Name -notlike "*gateway*" } | get-virtualportgroup
 $networkAdapters=$cloneVMs | get-networkadapter
-$LANAdapters=$networkAdapters | where { $_.NetworkName -like "$vApp*"}
+#$LANAdapters=$networkAdapters | where { $_.NetworkName -like "$vApp*"}
 $WANAdapters=$networkAdapters | where { $_.NetworkName -notlike "$vApp*"}
 foreach($srcPortGroup in $srcPortGroups){
-	$pgName="$vAppNew"+$srcPortGroup.name.substring($vApp.length)
+	# pg.name is in format $vApp_pgName
+	if( $srcPortGroup.Name -like "$vApp*" ){ $pgnew = $vAppNew+$srcPortGroup.Name.substring($vApp.Length)}
+	#otherwise its just pgName
+	else { $pgName = $vAppNew+"_"+$srcPortGroup.Name }
+
+	#$pgName="$vAppNew"+$srcPortGroup.name.substring($vApp.length)
 	write-host "....$srcPortGroup => $pgName"
-	$result=$LANAdapters | where {$_.NetworkName -eq $srcPortGroup } | set-networkadapter -NetworkName "$pgName" -confirm:$false
+	$result=$networkAdapters | where {$_.NetworkName -eq $srcPortGroup } | set-networkadapter -NetworkName "$pgName" -confirm:$false
 }
-write-host "..Connected WAN Nics"
-$result=$WANAdapters | set-networkadapter -NetworkName $conf.VIPortgroup -confirm:$false
+#write-host "..Connected WAN Nics"
+#$result=$WANAdapters | set-networkadapter -NetworkName $conf.VIPortgroup -confirm:$false
 
 # Fixup any named pipe serial ports
 write-host "..Configuring serial ports"
