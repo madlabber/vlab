@@ -37,6 +37,14 @@ $result=invoke-command -session $session -scriptblock {
     Write-Host "Removing vApp."
     $result=get-vapp $vApp | remove-vApp -confirm:$false
 
+    # If the lab had dedicated virtual switches, remove those too
+    $vSwitches=get-virtualswitch | ?{ $_.Name -like "$vApp*"}
+    $vmCount=$($vSwitches|get-vm).count
+    if ( $vmCount -eq 0 ){
+      Write-Host "Removing vSwitches."
+      $vSwitches | remove-virtualswitch -confirm:$false
+    }
+
     # remove datastore if mounted for authoring
     Write-Host "Removing Datastore."
     $result=Get-Datastore | where {$_.Name -eq "$vApp"} | remove-datastore -confirm:$false

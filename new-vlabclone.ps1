@@ -180,9 +180,10 @@ foreach($pg in $portGroups){
 
 # Connect WAN nics to the specified portgroup
 write-host "Connecting WAN Nics to $($conf.VIPortgroup)"
-# refresh the state of the network adapters
-$networkAdapters=$cloneApp | get-vm | get-networkadapter
-$WANAdapters=$networkAdapters | where { $_.NetworkName -notlike "$vApp*"}
+# Limit the scope to the *gateway* VM
+$networkAdapters=$cloneVMs | ?{ $_.Name -like "*gateway*" } | get-networkadapter
+# if there are more than one only connect the first one
+$WANAdapters=$networkAdapters | where { $_.NetworkName -notlike "$vApp*"} | Select-Object -First
 $result=$WANAdapters | set-networkadapter -NetworkName $conf.VIPortgroup -confirm:$false
 
 # Fixup any named pipe serial ports
