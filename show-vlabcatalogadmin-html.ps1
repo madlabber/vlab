@@ -63,7 +63,7 @@ $result=invoke-command -session $session -scriptblock {
 	  if ("$($overrides.rdppassword)" -ne ""){
 	      $rdppassword=$overrides.rdppassword
 		  $URI="http://localhost/myrtille/GetHash.aspx?password=$($overrides.rdppassword)"
-          $rdphash=$(Invoke-WebRequest -URI "$URI").content
+          $rdphash=$(Invoke-WebRequest -URI "$URI" -UseBasicParsing).content
 	  }
 	  
       $output+="<tr>" 
