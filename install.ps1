@@ -24,8 +24,8 @@ if (  $psversiontable.PSVersion.Major -lt 5 ){
 Write-Host "Installing Powershell Modules"
 set-psrepository PSGallery  -InstallationPolicy trusted
 Set-PSRepository -Name 'PSGallery' -InstallationPolicy Trusted
-Write-Host "Installing VMware.PowerCLI"
-Install-Module -Name VMware.PowerCLI 
+Write-Host "Installing VCF.PowerCLI"
+Install-Module -Name VCF.PowerCLI 
 Write-Host "Installing NetApp.ONTAP"
 Install-Module -Name NetApp.ONTAP
 
