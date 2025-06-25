@@ -21,10 +21,15 @@ if (  $psversiontable.PSVersion.Major -lt 5 ){
 }
 
 # Install Powershell Modules
+Write-Host "Installing Powershell Modules"
 set-psrepository PSGallery  -InstallationPolicy trusted
-Install-Module -Name VMware.PowerCLI
+Set-PSRepository -Name 'PSGallery' -InstallationPolicy Trusted
+Write-Host "Installing VMware.PowerCLI"
+Install-Module -Name VMware.PowerCLI 
+Write-Host "Installing NetApp.ONTAP"
 Install-Module -Name NetApp.ONTAP
 
+Write-Host "Configuring PowerCLI"
 # Configure Powershell unrestricted execution policy
 set-executionpolicy unrestricted
 # Configure PowerCLI CEIP option
@@ -37,6 +42,7 @@ Set-PowerCLIConfiguration -scope AllUsers -DisplayDeprecationWarnings $false -co
 Set-PowerCLIConfiguration -Scope AllUsers -DefaultVIServerMode Multiple -confirm:$false
 
 # Configure iis for myrtille:
+Write-Host "Configuring IIS"
 $IISFeatures = "Web-Server","Web-WebServer","Web-Common-Http","Web-Default-Doc","Web-Dir-Browsing","Web-Http-Errors","Web-Static-Content","Web-Health","Web-Http-Logging","Web-Performance","Web-Stat-Compression","Web-Security","Web-Filtering","Web-App-Dev","Web-Net-Ext45","Web-Asp-Net45","Web-ISAPI-Ext","Web-ISAPI-Filter","Web-WebSockets","Web-Mgmt-Tools","Web-Mgmt-Console"
 Install-WindowsFeature -Name $IISFeatures
 
@@ -47,8 +53,10 @@ If(!(Test-Path "$PSScriptRoot\setup")) { New-Item -Path "$PSScriptRoot\setup" -N
 [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
 
 # Install Node.js
-$nodejs_url = "https://nodejs.org/dist/v14.15.3/node-v14.15.3-x64.msi"
-$nodejs_exe = "$PSScriptRoot\setup\node-v14.15.3-x64.msi"
+# $nodejs_url = "https://nodejs.org/dist/v14.15.3/node-v14.15.3-x64.msi"
+# $nodejs_exe = "$PSScriptRoot\setup\node-v14.15.3-x64.msi"
+$nodejs_url = "https://nodejs.org/dist/v18.20.8/node-v18.20.8-x64.msi"
+$nodejs_exe = "$PSScriptRoot\setup\node-v18.20.8-x64.msi"
 if(!(Test-Path "$nodejs_exe")){
     write-host "Downloading node.js."
     $wc = New-Object System.Net.WebClient
