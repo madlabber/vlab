@@ -7,7 +7,7 @@ const port = 8081
 var fs = require('fs');
 var path = require('path');
 
-var navbar = '<center><table><tr><td><center><b><h2 style="margin:0;padding:0;"">'+sitename+'</h2></b></center></td></tr><tr><td><center><a href="/">Home</a> | <a href="/catalog">Catalog</a> | <a href="/instances">Instances</a> | <a href="/admin">Admin</a></center></td></tr></table></center><hr>';
+var navbar = '<center><table><tr><td><center><b><h2 style="margin:0;padding:0;"">'+sitename+'</h2></b></center></td></tr><tr><td><center><a href="/">Home</a> | <a href="/labs">Labs</a> | <a href="/catalog">Catalog</a> | <a href="/admin">Admin</a></center></td></tr></table></center><hr>';
 
 //Variables expected in the settings.cfg file
 var sitename="Homelab On Demand"
@@ -27,7 +27,7 @@ var rdpuser="administrator"
 var rdppassword="P@ssw0rd"
 
 // Default Navbar
-var navbar = '<center><table><tr><td><center><b><h2 style="margin:0;padding:0;"">'+sitename+'</h2></b></center></td></tr><tr><td><center><a href="/">Home</a> | <a href="/catalog">Catalog</a> | <a href="/instances">Instances</a> | <a href="/admin">Admin</a></center></td></tr></table></center><hr>';
+var navbar = '<center><table><tr><td><center><b><h2 style="margin:0;padding:0;"">'+sitename+'</h2></b></center></td></tr><tr><td><center><a href="/">Home</a> | <a href="/labs">Labs</a> | <a href="/catalog">Catalog</a> | <a href="/admin">Admin</a></center></td></tr></table></center><hr>';
 
 //Load the settings.cfg file
 fs.readFile('settings.cfg', 'utf8', function(err, data) {  
@@ -40,7 +40,7 @@ fs.readFile('settings.cfg', 'utf8', function(err, data) {
 
       if (key === 'sitename'){
         sitename=value;
-        navbar = '<center><table><tr><td><center><b><h2 style="margin:0;padding:0;"">'+sitename+'</h2></b></center></td></tr><tr><td><center><a href="/">Home</a> | <a href="/catalog">Catalog</a> | <a href="/instances">Instances</a> | <a href="/admin">Admin</a></center></td></tr></table></center><hr>';
+        navbar = '<center><table><tr><td><center><b><h2 style="margin:0;padding:0;"">'+sitename+'</h2></b></center></td></tr><tr><td><center><a href="/">Home</a> | <a href="/labs">Labs</a> | <a href="/catalog">Catalog</a> | <a href="/admin">Admin</a></center></td></tr></table></center><hr>';
       }
       if (key === 'vCenter'){ vCenter=value;}
       if (key === 'vserver'){ vserver=value;}
@@ -121,11 +121,11 @@ app.get('/catalogadmin', (
     child.stdin.end();
 }));
 
-app.get('/instanceadmin', (
+app.get('/labadmin', (
   function (req,res){
     console.log(''+req.url);
-    var psscript = require.resolve("./show-vlabinstanceadmin-html.ps1");   
-    var pgtitle = "Instance Administration";      
+    var psscript = require.resolve("./show-vlablabadmin-html.ps1");   
+    var pgtitle = "Lab Administration";      
 
     res.writeHead(200, {'Content-Type': 'text/html'});
     res.write('<head><meta name="viewport" content="width=device-width, initial-scale=1"></head>');
@@ -140,10 +140,10 @@ app.get('/instanceadmin', (
     child.on("exit",function(){ res.end('<br><hr>:<hr>') });
     child.stdin.end();
 }));
-app.get('/instances', (
+app.get('/labs', (
   function (req,res){
     var psscript = require.resolve("./show-vlabs-html.ps1");   
-    var pgtitle = "Instances";      
+    var pgtitle = "Labs";      
 
     console.log(''+req.url);    
     var url = require('url').parse(req.url)
@@ -174,7 +174,7 @@ app.get('/admin', (
     res.write(''+navbar);
     res.write('<b>'+pgtitle+':</b><hr>');
     res.write('<br><a href=/catalogadmin>Catalog Administration</a>');
-    res.write('<br><br><a href=/instanceadmin>Instance Administration</a>');
+    res.write('<br><br><a href=/labadmin>Lab Administration</a>');
     res.write('<br><br><a href=/config>Configuration Settings</a>');
     res.write('<br><br><a href=https://'+vCenter+' target=_blank>VMware vCenter</a>');
     res.write('<br><br><a href=https://'+cluster_mgmt+' target=_blank>ONTAP System Manager</a>');
@@ -242,6 +242,39 @@ app.get('/instance', (
     child.stdin.end();       
 }));
 
+app.get('/lab', (
+  function (req, res) { 
+    console.log(''+req.url);  
+    var psscript = require.resolve("./show-vlab-html.ps1"); 
+    var pgtitle = "Lab";
+    var url = require('url').parse(req.url)
+    res.on('error', function(data){console.log(""+data)});
+
+    res.writeHead(200, {'Content-Type': 'text/html'});
+    res.write('<head><meta http-equiv="refresh" content="60" /><meta name="viewport" content="width=device-width, initial-scale=1"></head>');
+    res.write(''+navbar);
+    res.write('<b>'+pgtitle+':</b><hr><br>');
+
+    console.log(":: "+psscript);
+    var spawn = require("child_process").spawn,child;
+    child = spawn("powershell.exe",[psscript,url.query],{ cwd: process.cwd(), detached: false });
+    child.stdout.on("data",function(data){res.write(""+data)});
+    child.stderr.on("data",function(data){console.log(""+data)});
+    child.on("exit",function(){
+      res.write('<hr>');
+      res.write('<form method="post" action="/start?'+url.query+'">');
+      res.write('<button type="submit">Start</button> ');
+      res.write('<button type="submit" formaction="/stop?'+url.query+'">Stop</button> ');          
+      res.write('<button type="submit" formaction="/kill?'+url.query+'">Kill</button> ');  
+      res.write('<button type="submit" formaction="/destroy?'+url.query+'">Destroy</button> '); 
+      res.write('<hr>');
+      res.write('</form>');
+      res.end(' ');
+    });
+    child.stdin.end();       
+}));
+
+
 app.get('/config', (
   function (req, res) { 
     console.log(''+req.url);  
@@ -277,7 +310,7 @@ app.post('/provision', (
   function (req, res) { 
     console.log(''+req.url);  
     var psscript = require.resolve("./new-vlabclone.ps1"); 
-    var pgtitle = "Provisioning instance...";
+    var pgtitle = "Provisioning lab...";
     var url = require('url').parse(req.url)
     res.on('error', function(data){console.log(""+data)});
 
@@ -305,7 +338,7 @@ app.all('/start', (
   function (req, res) { 
     console.log(''+req.url);  
     var psscript = require.resolve("./start-vlab.ps1"); 
-    var pgtitle = "Starting instance...";
+    var pgtitle = "Starting lab...";
     var url = require('url').parse(req.url)
     res.on('error', function(data){console.log(""+data)});
 
@@ -323,7 +356,7 @@ app.all('/start', (
     child.stderr.on("data",function(data){console.log(""+data)});
     child.on("exit",function(){
       console.log("Script finished");
-      //res.write('<script type="text/javascript">window.location = "/instance?'+url.query+'";</script>');
+      //res.write('<script type="text/javascript">window.location = "/lab?'+url.query+'";</script>');
       res.write('<script type="text/javascript">javascript:window.location=document.referrer;</script>');
       res.end('Done.');
     });
@@ -334,7 +367,7 @@ app.post('/stop', (
   function (req, res) { 
     console.log(''+req.url);  
     var psscript = require.resolve("./stop-vlab.ps1"); 
-    var pgtitle = "Stopping instance...";
+    var pgtitle = "Stopping lab...";
     var url = require('url').parse(req.url)
     res.on('error', function(data){console.log(""+data)});
 
@@ -352,7 +385,7 @@ app.post('/stop', (
     child.stderr.on("data",function(data){console.log(""+data)});
     child.on("exit",function(){
       console.log("Script finished");
-     // res.write('<script type="text/javascript">window.location = "/instance?'+url.query+'";</script>');
+     // res.write('<script type="text/javascript">window.location = "/lab?'+url.query+'";</script>');
       res.write('<script type="text/javascript">javascript:window.location=document.referrer;</script>');
       res.end('Done.');
     });
@@ -363,7 +396,7 @@ app.post('/kill', (
   function (req, res) { 
     console.log(''+req.url);  
     var psscript = require.resolve("./stop-vlab.ps1"); 
-    var pgtitle = "Killing instance...";
+    var pgtitle = "Killing lab...";
     var url = require('url').parse(req.url)
     res.on('error', function(data){console.log(""+data)});
 
@@ -381,7 +414,7 @@ app.post('/kill', (
     child.stderr.on("data",function(data){console.log(""+data)});
     child.on("exit",function(){
       console.log("Script finished");
-      //res.write('<script type="text/javascript">window.location = "/instance?'+url.query+'";</script>');
+      //res.write('<script type="text/javascript">window.location = "/lab?'+url.query+'";</script>');
       res.write('<script type="text/javascript">javascript:window.location=document.referrer;</script>');
       res.end('Done.');
     });
@@ -392,7 +425,7 @@ app.post('/destroy', (
   function (req, res) { 
     console.log(''+req.url);  
     var psscript = require.resolve("./remove-vlab.ps1"); 
-    var pgtitle = "Destroying instance...";
+    var pgtitle = "Destroying lab...";
     var url = require('url').parse(req.url)
     res.on('error', function(data){console.log(""+data)});
 
@@ -410,7 +443,7 @@ app.post('/destroy', (
     child.stderr.on("data",function(data){console.log(""+data)});
     child.on("exit",function(){
       console.log("Script finished");
-      res.write('<script type="text/javascript">window.location = "/instances";</script>');
+      res.write('<script type="text/javascript">window.location = "/labs";</script>');
       res.end('Done.');
     });
     child.stdin.end(); 

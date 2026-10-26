@@ -237,7 +237,7 @@ if ( $conf.autostart -eq "true" ){
 }
 
 # redirect the portal to the new instance
-write-host "<script type=`"text/javascript`">window.location = `"/instance?$vAppNew`";</script>"
+write-host "<script type=`"text/javascript`">window.location = `"/lab?$vAppNew`";</script>"
 
 # Drop the vApp into the pipeline
 get-vapp $vAppNew

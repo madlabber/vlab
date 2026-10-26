@@ -76,7 +76,7 @@ $result=invoke-command -session $session -scriptblock {
 
       if ("$($powerstate[$instance.Name])" -eq ""){$powerstate[$instance.Name]="Disabled"}
 
-      $output+='  <td valign=top><a href="/instance?'+$instance+'">'+$instance+'</a></td>' 
+      $output+='  <td valign=top><a href="/lab?'+$instance+'">'+$instance+'</a></td>' 
       $output+="  <td valign=top>"+$descriptions[$instance.Name]+"</td>"       
       $output+="  <td valign=top>"+$powerstate[$instance.Name]+"</td>" 
       #Action buttons:

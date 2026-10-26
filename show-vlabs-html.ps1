@@ -97,7 +97,7 @@ $result=invoke-command -session $session -scriptblock {
       # Construct Table Row
       $output+="<tr>" 
       $output+="  <td valign=top align=right><font color=$led>&#9864</font></td>"        
-      $output+='  <td valign=top><a href="/instance?'+$instance+'">'+$instance+'</a></td>' 
+      $output+='  <td valign=top><a href="/lab?'+$instance+'">'+$instance+'</a></td>' 
       $output+="  <td valign=top>"+$descriptions[$parent]+"</td>"       
       $output+="  <td valign=top>"+$InstanceState+"</td>" 
       #Action buttons:
