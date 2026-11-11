@@ -65,7 +65,7 @@ if(!(Test-Path "$nodejs_exe")){
 }
 write-host
 Write-host "Installing node.js"
-Start-Process "msiexec.exe" -argumentlist "/qn /l* $PSScriptRoot\setup\node-log.txt /i $PSScriptRoot\setup\node-v14.15.3-x64.msi" -Wait
+Start-Process "msiexec.exe" -argumentlist "/qn /l* $PSScriptRoot\setup\node-log.txt /i $PSScriptRoot\setup\node-v18.20.8-x64.msi" -Wait
 $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
 
 # npm install nodemon -g
