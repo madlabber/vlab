@@ -10,7 +10,8 @@ if ($session.count -gt 0) {
 
 # if no session exists, or the connection attempt failed, start a new session
 if ($result.count -ne 1) { 
-    $session=new-pssession -ComputerName "localhost" -Name "node-vlab" 
+    get-pssession -Name "node-vlab" | remove-pssession
+    $session=new-pssession -ComputerName "localhost" -Name "node-vlab" -Authentication Negotiate
     $result=$session | connect-pssession
 }
 

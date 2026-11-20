@@ -108,16 +108,16 @@ $result=invoke-command -session $session -scriptblock {
     Write-Host      "</table>"
     Write-Host   "</tr></td></table>"
 
-    # Lab Topology Diagram
+   # Lab Topology Diagram
    # Write-Host "</td><td valign=top>"
     $diagram="$parent`.jpg"
+    if ( test-path "$ScriptDirectory\cmdb\$parent`.png") {$diagram="$parent`.png" }
     if ( Test-Path "$ScriptDirectory\cmdb\$diagram" -PathType Leaf ) {
       Write-Host    "<table style=`"display: inline-block;`">"
       Write-Host       "<tr><td valign=top><b>Topology:</b><hr></td></tr>"
       Write-Host       "<tr><td><img style=`"width: 600px;max-width: 100%;height: auto;`" src=$diagram alt=lab_diagram></td></tr>"
       Write-Host    "</table>"
-    Write-Host   "</tr></td></table>"
-
+      Write-Host   "</tr></td></table>"
     }
     Write-Host "</td></tr></table>"
 } -ArgumentList $CURRENTVLAB,$psscriptroot
